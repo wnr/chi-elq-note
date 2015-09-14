@@ -120,6 +120,22 @@
     \item What do we want and why? Modules that are responsive relative to its outer frame.
   \end{itemize}
 
+  A module is an interchangeable and independent part of a program that typically has a single and well-defined responsibility.
+  Modular programming is a technique to reduce complexity and enable reusability.
+  In order for a module to be reusable it must not assume in which context it is being used.
+
+  Responsive Web Design (RWD) is an approach to make the application design respond to the viewport size, in order to support varying devices.
+  This is achieved by using CSS media queries to define conditional style rules.
+
+  The problem is that there is no way to make a module responsive without it being context-aware, due to media queries only being able to target the viewport.
+  Thus, a responsive module using element queries is layout dependent and has therefore limited reusability.
+
+  The desired behavior of a responsive module is having its inner design responding to the size of \emph{its frame} instead of the viewport.
+  Only then is a responsive module independent of its layout context.
+
+  This can be achieved with the theoretical feature \emph{element queries} that enables conditional CSS rules by an arbitrary element size.
+  This note presents a novel implementation of element queries in JavaScript, and discusses the new possibilities of GUI design.
+
 \section{Examples of Broken RWD Today}
   \begin{itemize}
     \item MQ is not the solution to RWD. ($MQ -> RWD$. $RWD !-> MQ$)
