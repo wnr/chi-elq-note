@@ -146,11 +146,24 @@
 
   Media queries were designed to enable developers to conditionally design content by the media, such as using serif fonts when printed and sans-serif when viewed on a screen.
   Therefore, it is only applicable for RWD of non-modular static applications.
-  In a world where no better solution than media queries exists for RWD, changing the layout of an application become a cumbersome task.
+  In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application become a cumbersome task.
   
-  Imagine an application that displays stock market data in various tables.
-  Each table is a module, since it may be displayed in multiple views and applications.
-  Each table is also responsive, so that less important columns gets hidden as the size of the table shrinks.
+  Imagine an application that displays the current weather of various cities as widgets, by using a weather widget module.
+  The module should be responsive, so that more information such as a temperature graph over time is displayed when the widget is big.
+  When the widget is small it should only display the current temperature.
+  Users should also be able to add, remove and resize widgets.
+
+  Such application cannot be built with media queries.
+  Since the widgets can have varying size, the module cannot change design by breakpoints relative to the viewport.
+  To overcome this problem we must change the application so that widgets always have the same size.
+  If we also assume that all widgets always have a fixed percentage, for example 25\%, of the viewport width, it is possible to make the module responsive by using media queries.
+
+  The problem now is that we have removed the reusability of the weather module, since it may only be used in applications that grant it 25\% of the viewport width.
+  Also, if we decide to add a vertical menu to the application we need to change the media queries of the module.
+  In more complex applications such change might result in changing hundreds of media queries.
+  Even worse, if the menu is supposed to hide on user input the responsiveness of the module breaks since the layout changes dynamically.
+
+  As we can see, even with limited requirements there still are significant flaws with using media queries for responsive modules.
 
 \section{A Solution}
   \begin{itemize}
