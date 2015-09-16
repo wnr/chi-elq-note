@@ -163,6 +163,10 @@
   In more complex applications such change might result in changing hundreds of media queries.
   Even worse, if the menu is supposed to hide on user input the responsiveness of the module breaks since the layout changes dynamically.
 
+  Additionally, it is popular to define breakpoints relative to the font size.
+  Media queries can only target the font size of the document root, limiting the functionality drastically.
+  With element queries, breakpoints may be defined relative to the font size of the targeted element.
+
   As we can see, even with limited requirements there still are significant flaws with using media queries for responsive modules.
 
 \section{A Solution}
