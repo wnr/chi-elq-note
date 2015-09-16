@@ -156,7 +156,7 @@
   Such application cannot be built with media queries.
   Since the widgets can have varying size, the module cannot change design by breakpoints relative to the viewport.
   To overcome this problem we must change the application so that widgets always have the same size.
-  If we also assume that all widgets always have a fixed percentage, for example 25\%, of the viewport width, it is possible to make the module responsive by using media queries.
+  If we also assume that all widgets always have a fixed percentage, for example 25\% of the viewport width, it is possible to make the module responsive by using media queries.
 
   The problem now is that we have removed the reusability of the weather module, since it may only be used in applications that grant it 25\% of the viewport width.
   Also, if we decide to add a vertical menu to the application we need to change the media queries of the module.
@@ -169,11 +169,16 @@
 
   As we can see, even with limited requirements there still are significant flaws with using media queries for responsive modules.
 
-\section{A Solution}
+\section{Requirements of a Solution}
   \begin{itemize}
     \item Parents should decide the layout of their children, and the children should adapt their inner design accordingly.
     \item Valid language syntaxes (HTML, CSS, JS).
   \end{itemize}
+
+  First, a solution must enable developers to change the design of an element by its parent size.
+  Elements should automatically respond to changes of the parent size so that the correct design can be activated for each size.
+
+  Second, a solution must conform to the syntax of HTML, CSS, and JS so that the compatability of tools, libraries and existing projects is retained.
 
 \section{Why is a Native Implementation troublesome?}
   \begin{itemize}
