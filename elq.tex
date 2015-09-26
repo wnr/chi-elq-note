@@ -124,16 +124,19 @@
   Modular programming is a technique to reduce complexity and enable reusability.
   In order for a module to be reusable it must not assume in which context it is being used.
 
-  Responsive Web Design (RWD) is an approach to make the application design respond to the viewport size, in order to support varying devices.
-  This is achieved by using CSS media queries to define conditional style rules.
+  Responsive Web Design (RWD) is an approach to make an application respond to the viewport size and device characteristics. 
+  This is achieved by using CSS media queries to define conditional style rules. In this paper we will focus on the size responsiveness of modules.
+  
+  %Responsive Web Design (RWD) is an approach to make the application design respond to the viewport size, in order to support varying devices.
+  %This is achieved by using CSS media queries to define conditional style rules.
 
   The problem is that there is no way to make a module responsive without it being context-aware, due to media queries only being able to target the viewport.
-  Thus, a responsive module using element queries is layout dependent and has therefore limited reusability.
+  Thus, a responsive module using media queries is layout dependent and has therefore limited reusability. 
 
-  The desired behavior of a responsive module is having its inner design responding to the size of \emph{its frame} instead of the viewport.
+  The desired behavior of a responsive module is having its inner design responding to the size of \emph{its container} instead of the viewport.
   Only then is a responsive module independent of its layout context.
 
-  This can be achieved with the theoretical feature \emph{element queries} that enables conditional CSS rules by an arbitrary element size.
+  This can be achieved with the theoretical feature \emph{element/container queries} that enables conditional style rules by an arbitrary element size.
   This note presents a novel implementation of element queries in JavaScript, and discusses the new possibilities of GUI design.
 
 \section{Examples of Broken RWD Today}
@@ -155,13 +158,20 @@
 
   Such application cannot be built with media queries.
   Since the widgets can have varying size, the module cannot change design by breakpoints relative to the viewport.
-  To overcome this problem we must change the application so that widgets always have the same size.
-  If we also assume that all widgets always have a fixed percentage, for example 25\% of the viewport width, it is possible to make the module responsive by using media queries.
-
-  The problem now is that we have removed the reusability of the weather module, since it may only be used in applications that grant it 25\% of the viewport width.
-  Also, if we decide to add a vertical menu to the application we need to change the media queries of the module.
-  In more complex applications such change might result in changing hundreds of media queries.
-  Even worse, if the menu is supposed to hide on user input the responsiveness of the module breaks since the layout changes dynamically.
+  To overcome this problem we must change the application so that widgets always have the same size. This implies that the size of the module and the media 
+  query breakpoints are coupled/intertwined, i.e. they are proportional to each other.
+%  If we also assume that all widgets always have a fixed percentage, for example 25\% of the viewport width, it is possible to make the module responsive by using media queries.
+The problem now is that we have removed the reusability of the weather module, since it requires the specific width that is correctly proportional to the media query breakpoints. 
+  
+  Imagine a company working on a big application that uses media queries for responsiveness (i.e., each responsive module assumes to have a specific percentage of the viewport size).
+  The ability to change is desired by both developers and stakeholders, but is limited by this responsive approach.
+  The requirement of changing a menu from being a horizontal top menu to being a vertical side menu implies that all responsive modules break since the assumed proportionality of each module is changed.
+  Even worse, if the menu is also supposed to hide on user input the responsiveness of the module breaks since the layout changes dynamically.
+  The latter requirement are impossible without element queries. 
+  
+%  Also, if we decide to add a vertical menu to the application we need to change the media queries of the module.
+%  In more complex applications such change might result in changing hundreds of media queries.
+%  Even worse, if the menu is supposed to hide on user input the responsiveness of the module breaks since the layout changes dynamically.
 
   Additionally, it is popular to define breakpoints relative to the font size.
   Media queries can only target the font size of the document root, limiting the functionality drastically.
@@ -175,7 +185,7 @@
     \item Valid language syntaxes (HTML, CSS, JS).
   \end{itemize}
 
-  First, a solution must enable developers to change the design of an element by its parent size.
+  First, a solution must provide a possibility for an element to change depending on the properties of the parent element.
   Elements should automatically respond to changes of the parent size so that the correct design can be activated for each size.
 
   Second, a solution must conform to the syntax of HTML, CSS, and JS so that the compatability of tools, libraries and existing projects is retained.
