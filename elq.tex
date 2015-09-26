@@ -135,52 +135,52 @@
   The desired behavior of a responsive module is having its inner design responding to the size of \emph{its frame} instead of the viewport.
   Only then is a responsive module independent of its layout context.
 
-  This can be achieved with the theoretical feature \emph{element queries} that enables conditional CSS rules by an arbitrary element size.
+  This can be achieved with the theoretical feature \emph{element queries} that enables conditional CSS rules by the properties of arbitrary elements.
   This paper presents a novel implementation of element queries in JavaScript, and discusses the new possibilities of GUI design that our implementation enables.
 
-\section{Examples of Broken RWD Today}
-  \begin{itemize}
-    \item MQ is not the solution to RWD. (MQ was not designed for RWD as the feature was released long before RWD)
-    \item All elements adapt their inner design by the viewport width.
-    \item Menu Example shows how MQ are broken.
-    \item Limitations of MQ regarding font-size (em).
-  \end{itemize}
+  \subsection{The Problem Exemplified}
+    \begin{itemize}
+      \item MQ is not the solution to RWD. (MQ was not designed for RWD as the feature was released long before RWD)
+      \item All elements adapt their inner design by the viewport width.
+      \item Menu Example shows how MQ are broken.
+      \item Limitations of MQ regarding font-size (em).
+    \end{itemize}
 
-  Media queries were designed to enable developers to conditionally design content by the media, such as using serif fonts when printed and sans-serif when viewed on a screen.
-  Therefore, it is only applicable for RWD of non-modular static applications.
-  In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application becomes a cumbersome task.
-  
-  Imagine an application that displays the current weather of various cities as widgets, by using a weather widget module.
-  The module should be responsive, so that more information such as a temperature graph over time is displayed when the widget is big.
-  When the widget is small it should only display the current temperature.
-  Users should also be able to add, remove and resize widgets.
+    Media queries were designed to enable developers to conditionally design content by the media, such as using serif fonts when printed and sans-serif when viewed on a screen.
+    Therefore, it is only applicable for RWD of non-modular static applications.
+    In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application becomes a cumbersome task.
+    
+    Imagine an application that displays the current weather of various cities as widgets, by using a weather widget module.
+    The module should be responsive, so that more information such as a temperature graph over time is displayed when the widget is big.
+    When the widget is small it should only display the current temperature.
+    Users should also be able to add, remove and resize widgets.
 
-  Such application cannot be built with media queries.
-  Since the widgets can have varying size, the module cannot change design by breakpoints relative to the viewport.
-  To overcome this problem we must change the application so that widgets always have the same size.
-  If we also assume that all widgets always have a fixed percentage, for example 25\% of the viewport width, it is possible to make the module responsive by using media queries.
+    Such application cannot be built with media queries.
+    Since the widgets can have varying size, the module cannot change design by breakpoints relative to the viewport.
+    To overcome this problem we must change the application so that widgets always have the same size.
+    If we also assume that all widgets always have a fixed percentage, for example 25\% of the viewport width, it is possible to make the module responsive by using media queries.
 
-  The problem now is that we have removed the reusability of the weather module, since it may only be used in applications that grant it 25\% of the viewport width.
-  Also, if we decide to add a vertical menu to the application we need to change the media queries of the module.
-  In more complex applications such change might result in changing hundreds of media queries.
-  Even worse, if the menu is supposed to hide on user input the responsiveness of the module breaks since the layout changes dynamically.
+    The problem now is that we have removed the reusability of the weather module, since it may only be used in applications that grant it 25\% of the viewport width.
+    Also, if we decide to add a vertical menu to the application we need to change the media queries of the module.
+    In more complex applications such change might result in changing hundreds of media queries.
+    Even worse, if the menu is supposed to hide on user input the responsiveness of the module breaks since the layout changes dynamically.
 
-  Additionally, it is popular to define breakpoints relative to the font size.
-  Media queries can only target the font size of the document root, limiting the functionality drastically.
-  With element queries, breakpoints may be defined relative to the font size of the targeted element.
+    Additionally, it is popular to define breakpoints relative to the font size.
+    Media queries can only target the font size of the document root, limiting the functionality drastically.
+    With element queries, breakpoints may be defined relative to the font size of the targeted element.
 
-  As we can see, even with limited requirements there still are significant flaws with using media queries for responsive modules.
+    As we can see, even with limited requirements there still are significant flaws with using media queries for responsive modules.
 
-\section{Requirements of a Solution}
-  \begin{itemize}
-    \item Parents should decide the layout of their children, and the children should adapt their inner design accordingly.
-    \item Valid language syntaxes (HTML, CSS, JS).
-  \end{itemize}
+    \subsection{Requirements}
+      \begin{itemize}
+        \item Parents should decide the layout of their children, and the children should adapt their inner design accordingly.
+        \item Valid language syntaxes (HTML, CSS, JS).
+      \end{itemize}
 
-  First, a solution must enable developers to change the design of an element by its parent size.
-  Elements should automatically respond to changes of the parent size so that the correct design can be activated for each size.
+    First, a solution must enable developers to change the design of an element by its parent size.
+    Elements should automatically respond to changes of the parent size so that the correct design can be activated for each size.
 
-  Second, a solution must conform to the syntax of HTML, CSS, and JS so that the compatability of tools, libraries and existing projects is retained.
+    Second, a solution must conform to the syntax of HTML, CSS, and JS so that the compatability of tools, libraries and existing projects is retained.
 
 \section{Why is a Native Implementation troublesome?}
   \begin{itemize}
