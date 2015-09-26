@@ -128,13 +128,13 @@
   This is achieved by using CSS media queries to define conditional style rules.
 
   The problem is that there is no way to make a module responsive without it being context-aware, due to media queries only being able to target the viewport.
-  Thus, a responsive module using element queries is layout dependent and has therefore limited reusability.
+  Thus, a responsive module using media queries is layout dependent and has therefore limited reusability.
 
   The desired behavior of a responsive module is having its inner design responding to the size of \emph{its frame} instead of the viewport.
   Only then is a responsive module independent of its layout context.
 
   This can be achieved with the theoretical feature \emph{element queries} that enables conditional CSS rules by an arbitrary element size.
-  This note presents a novel implementation of element queries in JavaScript, and discusses the new possibilities of GUI design.
+  This paper presents a novel implementation of element queries in JavaScript, and discusses the new possibilities of GUI design that our implementation enables.
 
 \section{Examples of Broken RWD Today}
   \begin{itemize}
@@ -146,7 +146,7 @@
 
   Media queries were designed to enable developers to conditionally design content by the media, such as using serif fonts when printed and sans-serif when viewed on a screen.
   Therefore, it is only applicable for RWD of non-modular static applications.
-  In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application become a cumbersome task.
+  In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application becomes a cumbersome task.
   
   Imagine an application that displays the current weather of various cities as widgets, by using a weather widget module.
   The module should be responsive, so that more information such as a temperature graph over time is displayed when the widget is big.
