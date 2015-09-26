@@ -1,126 +1,128 @@
-\documentclass{sigchi}
+% THIS IS SIGPROC-SP.TEX - VERSION 3.1
+% WORKS WITH V3.2SP OF ACM_PROC_ARTICLE-SP.CLS
+% APRIL 2009
+%
+% It is an example file showing how to use the 'acm_proc_article-sp.cls' V3.2SP
+% LaTeX2e document class file for Conference Proceedings submissions.
+% ----------------------------------------------------------------------------------------------------------------
+% This .tex file (and associated .cls V3.2SP) *DOES NOT* produce:
+%       1) The Permission Statement
+%       2) The Conference (location) Info information
+%       3) The Copyright Line with ACM data
+%       4) Page numbering
+% ---------------------------------------------------------------------------------------------------------------
+% It is an example which *does* use the .bib file (from which the .bbl file
+% is produced).
+% REMEMBER HOWEVER: After having produced the .bbl file,
+% and prior to final submission,
+% you need to 'insert'  your .bbl file into your source .tex file so as to provide
+% ONE 'self-contained' source file.
+%
+% Questions regarding SIGS should be sent to
+% Adrienne Griscti ---> griscti@acm.org
+%
+% Questions/suggestions regarding the guidelines, .tex and .cls files, etc. to
+% Gerald Murray ---> murray@hq.acm.org
+%
+% For tracking purposes - this is V3.1SP - APRIL 2009
 
-% Use this command to override the default ACM copyright statement
-% (e.g. for preprints).  Consult the conference website for the
-% camera-ready copyright statement.
+\documentclass{acm_proc_article-sp}
 
-
-%% EXAMPLE BEGIN -- HOW TO OVERRIDE THE DEFAULT COPYRIGHT STRIP -- (July 22, 2013 - Paul Baumann)
-% \toappear{Permission to make digital or hard copies of all or part of this work for personal or classroom use is      granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components of this work owned by others than ACM must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org. \\
-% {\emph{CHI'14}}, April 26--May 1, 2014, Toronto, Canada. \\
-% Copyright \copyright~2014 ACM ISBN/14/04...\$15.00. \\
-% DOI string from ACM form confirmation}
-%% EXAMPLE END -- HOW TO OVERRIDE THE DEFAULT COPYRIGHT STRIP -- (July 22, 2013 - Paul Baumann)
-
-
-% Arabic page numbers for submission.  Remove this line to eliminate
-% page numbers for the camera ready copy 
-
-%\pagenumbering{arabic}
-
-% Load basic packages
-\usepackage{balance}  % to better equalize the last page
-\usepackage{graphics} % for EPS, load graphicx instead 
-%\usepackage[T1]{fontenc}
-\usepackage{txfonts}
-\usepackage{times}    % comment if you want LaTeX's default font
-\usepackage[pdftex]{hyperref}
-% \usepackage{url}      % llt: nicely formatted URLs
-\usepackage{color}
-\usepackage{textcomp}
-\usepackage{booktabs}
-\usepackage{ccicons}
-\usepackage{todonotes}
-
-% llt: Define a global style for URLs, rather that the default one
-\makeatletter
-\def\url@leostyle{%
-  \@ifundefined{selectfont}{\def\UrlFont{\sf}}{\def\UrlFont{\small\bf\ttfamily}}}
-\makeatother
-\urlstyle{leo}
-
-% To make various LaTeX processors do the right thing with page size.
-\def\pprw{8.5in}
-\def\pprh{11in}
-\special{papersize=\pprw,\pprh}
-\setlength{\paperwidth}{\pprw}
-\setlength{\paperheight}{\pprh}
-\setlength{\pdfpagewidth}{\pprw}
-\setlength{\pdfpageheight}{\pprh}
-
-\newcommand{\notetitle}{Allowing Responsive Web Modules}
-
-% Make sure hyperref comes last of your loaded packages, to give it a
-% fighting chance of not being over-written, since its job is to
-% redefine many LaTeX commands.
-\definecolor{linkColor}{RGB}{6,125,233}
-\hypersetup{%
-  pdftitle={\notetitle},
-  pdfauthor={LaTeX},
-  pdfkeywords={SIGCHI, proceedings, archival format},
-  bookmarksnumbered,
-  pdfstartview={FitH},
-  colorlinks,
-  citecolor=black,
-  filecolor=black,
-  linkcolor=black,
-  urlcolor=linkColor,
-  breaklinks=true,
-}
-
-% create a shortcut to typeset table headings
-% \newcommand\tabhead[1]{\small\textbf{#1}}
-
-% End of preamble. Here it comes the document.
 \begin{document}
 
-\title{\notetitle}
+\title{Allowing Responsive Web Modules}
+\subtitle{}
+%
+% You need the command \numberofauthors to handle the 'placement
+% and alignment' of the authors beneath the title.
+%
+% For aesthetic reasons, we recommend 'three authors at a time'
+% i.e. three 'name/affiliation blocks' be placed beneath the title.
+%
+% NOTE: You are NOT restricted in how many 'rows' of
+% "name/affiliations" may appear. We just ask that you restrict
+% the number of 'columns' to three.
+%
+% Because of the available 'opening page real-estate'
+% we ask you to refrain from putting more than six authors
+% (two rows with three columns) beneath the article title.
+% More than six makes the first-page appear very cluttered indeed.
+%
+% Use the \alignauthor commands to handle the names
+% and affiliations for an 'aesthetic maximum' of six authors.
+% Add names, affiliations, addresses for
+% the seventh etc. author(s) as the argument for the
+% \additionalauthors command.
+% These 'additional authors' will be output/set for you
+% without further effort on your part as the last section in
+% the body of your article BEFORE References or any Appendices.
 
-\numberofauthors{3}
-\author{%
-  \alignauthor{1st Author Name\\
-    \affaddr{Affiliation}\\
-    \affaddr{City, Country}\\
-    \email{e-mail address}}\\
-  \alignauthor{2nd Author Name\\
-    \affaddr{Affiliation}\\
-    \affaddr{City, Country}\\
-    \email{e-mail address}}\\
-  \alignauthor{3rd Author Name\\
-    \affaddr{Affiliation}\\
-    \affaddr{City, Country}\\
-    \email{e-mail address}}\\
+\numberofauthors{3} %  in this sample file, there are a *total*
+% of EIGHT authors. SIX appear on the 'first-page' (for formatting
+% reasons) and the remaining two appear in the \additionalauthors section.
+%
+\author{
+% You can go ahead and credit any number of authors here,
+% e.g. one 'row of three' or two rows (consisting of one row of three
+% and a second row of one, two or three).
+%
+% The command \alignauthor (no curly braces needed) should
+% precede each author name, affiliation/snail-mail address and
+% e-mail address. Additionally, tag each line of
+% affiliation/address with \affaddr, and tag the
+% e-mail address with \email.
+%
+% 1st. author
+\alignauthor
+  Ben Trovato\\
+  \affaddr{Institute for Clarity in Documentation}\\
+  \affaddr{1932 Wallamaloo Lane}\\
+  \affaddr{Wallamaloo, New Zealand}\\
+  \email{trovato@corporation.com}
+% 2nd. author
+\alignauthor
+  G.K.M. Tobin\\
+  \affaddr{Institute for Clarity in Documentation}\\
+  \affaddr{P.O. Box 1212}\\
+  \affaddr{Dublin, Ohio 43017-6221}\\
+  \email{webmaster@marysville-ohio.com}
+% 3rd. author
+\alignauthor
+  Lars Th{\o}rv{\"a}ld\\
+  \affaddr{The Th{\o}rv{\"a}ld Group}\\
+  \affaddr{1 Th{\o}rv{\"a}ld Circle}\\
+  \affaddr{Hekla, Iceland}\\
+  \email{larst@affiliation.org}
 }
 
-\maketitle
+\date{10 October 2015}
+% Just remember to make sure that the TOTAL number of authors
+% is the number that will appear on the first page PLUS the
+% number that will appear in the \additionalauthors section.
 
+\maketitle
 \begin{abstract}
-  UPDATED---\today. This sample paper describes the
-  formatting requirements for SIGCHI conference proceedings, and
-  offers recommendations on writing for the worldwide SIGCHI
-  readership. Please review this document even if you have submitted
-  to SIGCHI conferences before, as some format details have changed
-  relative to previous years. Abstracts should be about 150 words and
-  are required.
+
 \end{abstract}
 
-\keywords{Authors' choice; of terms; separated; by semi\-colons;
-  commas, within terms only; this section is required.}
+% A category with the (minimum) three required fields
+\category{H.4}{Information Systems Applications}{Miscellaneous}
+%A category including the fourth, optional field follows...
+\category{D.2.8}{Software Engineering}{Metrics}[complexity measures, performance measures]
 
-\category{H.5.m.}{Information Interfaces and Presentation
-  (e.g. HCI)}{Miscellaneous} \category{See
-  \url{http://acm.org/about/class/1998/} for the full list of ACM
-  classifiers. This section is required.}{}{}
+\terms{Theory}
+
+\keywords{ACM proceedings, \LaTeX, text tagging} % NOT required for Proceedings
 
 \section{Introduction}
-  \begin{itemize}
-    \item Why modules? Reusability (even across applications), reduced code complexity.
-    \item Why responsive design?
-    \item Responsive Modules of today need to be context aware (thus, not very reusable [they only work in a specific layout]).
-    \item What do we want and why? Modules that are responsive relative to its outer frame.
-  \end{itemize}
+  % \begin{itemize}
+  %   \item Why modules? Reusability (even across applications), reduced code complexity.
+  %   \item Why responsive design?
+  %   \item Responsive Modules of today need to be context aware (thus, not very reusable [they only work in a specific layout]).
+  %   \item What do we want and why? Modules that are responsive relative to its outer frame.
+  % \end{itemize}
 
-  A module is an interchangeable and independent part of a program that typically has a single and well-defined responsibility.
+  A module is an interchangeable and independent part of a program that typically has a single and well-defined responsibility \cite{parnas1972criteria}.
   Modular programming is a technique to reduce complexity and enable reusability.
   In order for a module to be reusable it must not assume in which context it is being used.
 
@@ -201,49 +203,37 @@
     \item The mirror functionality of Elq makes it uniquely suitable for nested modules.
   \end{itemize}
 
-\section{Conclusion}
+\section{Conclusions}
   \begin{itemize}
     \item Production ready.
     \item Probably no standard (or not in a long time).
   \end{itemize}
 
+%\end{document}  % This is where a 'short' article might terminate
+
+%ACKNOWLEDGMENTS are optional
 \section{Acknowledgments}
+This section is optional; it is a location for you
+to acknowledge grants, funding, editing assistance and
+what have you.  In the present case, for example, the
+authors would like to thank Gerald Murray of ACM for
+his help in codifying this \textit{Author's Guide}
+and the \textbf{.cls} and \textbf{.tex} files that it describes.
 
-Sample text: We thank all the volunteers, and all publications support
-and staff, who wrote and provided helpful comments on previous
-versions of this document. Authors 1, 2, and 3 gratefully acknowledge
-the grant from NSF (\#1234--2012--ABC). \textit{This whole paragraph is
-  just an example.}
-
-% Balancing columns in a ref list is a bit of a pain because you
-% either use a hack like flushend or balance, or manually insert
-% a column break.  http://www.tex.ac.uk/cgi-bin/texfaq2html?label=balance
-% multicols doesn't work because we're already in two-column mode,
-% and flushend isn't awesome, so I choose balance.  See this
-% for more info: http://cs.brown.edu/system/software/latex/doc/balance.pdf
 %
-% Note that in a perfect world balance wants to be in the first
-% column of the last page.
+% The following two commands are all you need in the
+% initial runs of your .tex file to
+% produce the bibliography for the citations in your paper.
+\bibliographystyle{abbrv}
+\bibliography{elq}  % elq.bib is the name of the Bibliography in this case
+% You must have a proper ".bib" file
+%  and remember to run:
+% latex bibtex latex latex
+% to resolve all references
 %
-% If balance doesn't work for you, you can remove that and
-% hard-code a column break into the bbl file right before you
-% submit:
+% ACM needs 'a single self-contained file'!
 %
-% http://stackoverflow.com/questions/2149854/how-to-manually-equalize-columns-
-% in-an-ieee-paper-if-using-bibtex
-%
-% Or, just remove \balance and give up on balancing the last page.
-%
-% \balance{}
-
-% REFERENCES FORMAT
-% References must be the same font size as other body text.
-\bibliographystyle{SIGCHI-Reference-Format}
-\bibliography{sample}
-
+%APPENDICES are optional
+%\balancecolumns
+% That's all folks!
 \end{document}
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: t
-%%% End:
