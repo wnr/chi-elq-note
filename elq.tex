@@ -28,6 +28,7 @@
 
 \documentclass{acm_proc_article-sp}
 
+\usepackage{url}
 \usepackage{listings}
 \lstset{
   basicstyle=\scriptsize
@@ -130,33 +131,34 @@
   %   \item What do we want and why? Modules that are responsive relative to its outer frame.
   % \end{itemize}
 
-  A module is an interchangeable and independent part of a program that typically has a single and well-defined responsibility \cite{parnas1972criteria}.
-  Modular programming is a technique to reduce complexity and enable reusability.
+  Responsive Web Design (RWD) is an approach to make an application respond to the viewport size and device characteristics.
+  This is currently achieved by using CSS media queries that are designed to conditionally design content by the media, such as using serif fonts when printed and sans-serif when viewed on a screen.
+
+  In order to reduce complexity and enable reusability applications are typically composed of modules, i.e., interchangeable and independent parts that have a single and well-defined responsibility \cite{parnas1972criteria}.
   In order for a module to be reusable it must not assume in which context it is being used.
 
-  Responsive Web Design (RWD) is an approach to make an application respond to the viewport size and device characteristics. 
-  This is achieved by using CSS media queries to define conditional style rules. In this paper we will focus on the size responsiveness of modules.
-
+  In this paper we focus on the presentation layer of web applications.
+  As it stands, using media queries to make the presentation layer responsive precludes modularity.
   The problem is that there is no way to make a module responsive without it being context-aware, due to media queries only being able to target the viewport.
   Thus, a responsive module using media queries is layout dependent and has therefore limited reusability.
+  Therefore, media queries can only be used for RWD of non-modular static applications.
+  In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application becomes a cumbersome task.
 
   The desired behavior of a responsive module is having its inner design responding to the size of \emph{its container} instead of the viewport.
   Only then is a responsive module independent of its layout context.
+  In this paper we extend the concept of RWD to also include responsive modules.
 
-  This can be achieved with the theoretical feature \emph{element queries} that enables conditional CSS rules by the properties of arbitrary elements.
+  Realizing responsive modules requires CSS rules that are conditional upon \emph{elements}, instead of the global viewport.
+  The W3C has discussed such a feature under the name of \emph{element queries} given its analogy to media queries.
   This paper presents a novel implementation of element queries in JavaScript named \elq, and discusses the new possibilities of GUI design that our implementation enables.
 
   \subsection{The Problem Exemplified}
-    \begin{itemize}
-      \item MQ is not the solution to RWD. (MQ was not designed for RWD as the feature was released long before RWD)
-      \item All elements adapt their inner design by the viewport width.
-      \item Menu Example shows how MQ are broken.
-      \item Limitations of MQ regarding font-size (em).
-    \end{itemize}
-
-    Media queries were designed to enable developers to conditionally design content by the media, such as using serif fonts when printed and sans-serif when viewed on a screen.
-    Therefore, it is only applicable for RWD of non-modular static applications.
-    In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application becomes a cumbersome task.
+    % \begin{itemize}
+    %   \item MQ is not the solution to RWD. (MQ was not designed for RWD as the feature was released long before RWD)
+    %   \item All elements adapt their inner design by the viewport width.
+    %   \item Menu Example shows how MQ are broken.
+    %   \item Limitations of MQ regarding font-size (em).
+    % \end{itemize}
     
     Imagine an application that displays the current weather of various cities as widgets, by using a weather widget module.
     The module should be responsive, so that more information such as a temperature graph over time is displayed when the widget is big.
@@ -184,10 +186,10 @@
 
     \label{sec:reqs}
     \subsection{Requirements}
-      \begin{itemize}
-        \item Parents should decide the layout of their children, and the children should adapt their inner design accordingly.
-        \item Valid language syntaxes (HTML, CSS, JS).
-      \end{itemize}
+      % \begin{itemize}
+      %   \item Parents should decide the layout of their children, and the children should adapt their inner design accordingly.
+      %   \item Valid language syntaxes (HTML, CSS, JS).
+      % \end{itemize}
 
       First, a solution must provide a possibility for an element to change depending on the properties of the parent element.
       Elements should automatically respond to changes of the parent size so that the correct design can be presented for each size.
@@ -196,37 +198,38 @@
 
       Third, a solution must have adequate performance for large applications that make heavy use of responsive modules.
 
+      Extensibility.
+
+      Composability.
 
 
-\section{Element Queries}
-  Media queries and element queries are similar in the sense that they both enable developers to define conditional style rules that are applied by specified criteria.
-  The main difference is the type of criteria that can be used; in media queries device, document, and media criteria are used, while element criteria are used in element queries.
-  It can somewhat simplified be described as that media queries target the document root and up (i.e., the viewport, browser, OS, device, input mechanisms, etc.) while element queries target the document root and down (i.e., elements of the document).
+    \subsection{Contributions}
+      This paper makes the following contributions:
+      \begin{itemize}
+        \item A new design that enables responsive modules while conforming to the syntax of HTML, CSS, and JavaScript.
+        \item
+          % encapsulation of CSS based styling of elements.
+          Our approach is the first to enable nested elements that are responsive in a modular way, i.e., styling required for RWD is fully encapsulated in the module.
+          As a side effect, responsive modules may also be arbitrarily styled with CSS independently of their context.
+          % An approach that enables encapsulated styling of modules crucial for element queries, such as .
+          % As a result, responsive modules using \elq may also be nested.
+        \item
+          An extensible library architecture that enables plugins to significantly extend the behavior of the library.
+          This makes it possible to create plugins in order to ease integration of \elq into existing modules or libraries.
+        \item
+          A new implementation technique that offers substantially higher performance than previous approaches.
+          Our technique batch processes DOM operations so that layout thrashing (i.e., forcing the layout engine to perform multiple independent layouts) is avoided.
+      \end{itemize}
 
-  \subsection{Standardization}
-    It is stated on the W3C's www-style mailing list \cite{w3c_eq_mail} by Zbarsky of Mozilla, Atkins of Google and Sprehn of Google that element queries are infeasible to implement without restricting them.
-    By limiting element queries to specially separated container elements that can only be queried by child elements, many of the problems are resolved \cite{ricg_irc_log,ricg_issue_viewport}.
-    Therefore, the Responsive Issues Community Group (RICG) is currently investigating the possibility of standardizing \emph{container} queries.
+    The rest of the paper is organized as follows:
 
-    Unfortunately, even such limited container queries requires significant effort to implement \cite{ricg_issue_viewport}.
-    Atkins argues that a correct and full implementation is unlikely to be implemented, and therefore it might be wiser to pursue sub-standards that aids third-party solutions instead.
 
-  \subsection{JavaScript implementations}
-    \begin{itemize}
-      \item Why is this pragmatic? Compatability, no impact (performance, language) on apps that do not need responsive modules.
-      \item Why must it be a client side JS library?
-      \item Note drawbacks (but only drawbacks for added functionality!).
-      \item Mention that there is related work.
-    \end{itemize}
-    Implementing element queries as a third-party solution must be in the form of a client side library to be included in applications that makes sure all element queries are updated when necessary.
-    One could argue that a solution does not need to be executed at client side, but instead generate media queries server side for all modules with respect to the current application layout.
-    However, this is insufficient due to the modules then being limited to applications with static layouts.
-    Also, the generated media queries would not be able to respond to the user changing the page font size correctly as they can only target root-level font sizes.
+\section{Background}
+  \begin{itemize}
+    \item Explain media queries really short (simple example). Maybe explain some terminology.
+  \end{itemize}
 
-    Although an implementation in JavaScript will most probably be less performant than a native implementation, it can still be beneficial to have such feature implemented as a third-party library to avoid complex and restricting code in browsers.
-    % In the future, we hope that Elq may use the aiding sub-standards pushed by RICG, to achieve greater flexibility and performance.
-
-\section{\elq}
+\section{Overview of \elq}
   To enable element queries today, we have developed a novel JavaScript implementation named \elq.
   Our implementation satisfied all requirements given in~\ref{sec:reqs}.
   The library have been designed to conform to the standards and specifications of the web languages while providing the features required of building advanced constellations of responsive modules.
@@ -348,13 +351,56 @@
       Since this API uses media queries, there only exists a fixed set of breakpoints that can be used to determine when the grid should change layout.
       The column classes defines the behaviour of a the grid, and has the syntax \code{col-[breakpoint]-[size]}.
       Developers may choose which breakpoint to be used by the \code{sm, md, lg} units of a column class and the size may be between 1 and 12.
-      
 
-\section{Discussion and Summary of Related Work}
+\section{Extensions via plugins}
+  \begin{itemize}
+    \item Overall architecture
+    \item Plugin API
+    \item Example plugin
+  \end{itemize}
+
+\section{Implementation}
+  Batching.
+  Resize listening.
+
+\section{Empirical evaluation}
+  \subsection{Performance}
+  \subsection{Case studies}
+    Plugins makes it easy to integrate.
+
+\section{Discussion}
   \begin{itemize}
     \item Performance, APIs, Features.
     \item The mirror functionality of \elq makes it uniquely suitable for nested modules.
   \end{itemize}
+
+  \subsection{Element Queries}
+    Media queries and element queries are similar in the sense that they both enable developers to define conditional style rules that are applied by specified criteria.
+    The main difference is the type of criteria that can be used; in media queries device, document, and media criteria are used, while element criteria are used in element queries.
+    It can somewhat simplified be described as that media queries target the document root and up (i.e., the viewport, browser, OS, device, input mechanisms, etc.) while element queries target the document root and down (i.e., elements of the document).
+
+    \subsubsection{Standardization}
+      It is stated on the W3C's www-style mailing list \cite{w3c_eq_mail} by Zbarsky of Mozilla, Atkins of Google and Sprehn of Google that element queries are infeasible to implement without restricting them.
+      By limiting element queries to specially separated container elements that can only be queried by child elements, many of the problems are resolved \cite{ricg_irc_log,ricg_issue_viewport}.
+      Therefore, the Responsive Issues Community Group (RICG) is currently investigating the possibility of standardizing \emph{container} queries.
+
+      Unfortunately, even such limited container queries requires significant effort to implement \cite{ricg_issue_viewport}.
+      Atkins argues that a correct and full implementation is unlikely to be implemented, and therefore it might be wiser to pursue sub-standards that aids third-party solutions instead.
+
+    \subsubsection{JavaScript implementations}
+      \begin{itemize}
+        \item Why is this pragmatic? Compatability, no impact (performance, language) on apps that do not need responsive modules.
+        \item Why must it be a client side JS library?
+        \item Note drawbacks (but only drawbacks for added functionality!).
+        \item Mention that there is related work.
+      \end{itemize}
+
+
+      Although an implementation in JavaScript will most probably be less performant than a native implementation, it can still be beneficial to have such feature implemented as a third-party library to avoid complex and restricting code in browsers.
+      % In the future, we hope that Elq may use the aiding sub-standards pushed by RICG, to achieve greater flexibility and performance.
+
+\section{Related Work}
+  
 
 \section{Conclusions}
   \begin{itemize}
