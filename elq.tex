@@ -144,14 +144,6 @@
   Therefore, media queries can only be used for RWD of non-modular static applications.
   In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application becomes a cumbersome task.
 
-  The desired behavior of a responsive module is having its inner design responding to the size of \emph{its container} instead of the viewport.
-  Only then is a responsive module independent of its layout context.
-  In this paper we extend the concept of RWD to also include responsive modules.
-
-  Realizing responsive modules requires CSS rules that are conditional upon \emph{elements}, instead of the global viewport.
-  The W3C has discussed such a feature under the name of \emph{element queries} given its analogy to media queries.
-  This paper presents a novel implementation of element queries in JavaScript named \elq, and discusses the new possibilities of GUI design that our implementation enables.
-
   \subsection{The Problem Exemplified}
     % \begin{itemize}
     %   \item MQ is not the solution to RWD. (MQ was not designed for RWD as the feature was released long before RWD)
@@ -191,17 +183,31 @@
       %   \item Valid language syntaxes (HTML, CSS, JS).
       % \end{itemize}
 
-      First, a solution must provide a possibility for an element to change depending on the properties of the parent element.
-      Elements should automatically respond to changes of the parent size so that the correct design can be presented for each size.
+      The desired behavior of a responsive module is having its inner design responding to the size of \emph{its container} instead of the viewport.
+      Only then is a responsive module independent of its layout context.
+      Realizing responsive modules requires CSS rules that are conditional upon \emph{elements}, instead of the global viewport.
 
-      Second, a solution must conform to the syntax of HTML, CSS, and JavaScript so that the compatability of tools, libraries and existing projects is retained.
+      \begin{itemize}
+        \item 
+          A solution must provide a possibility for an element to change depending on the properties of the parent element.
+          Elements should automatically respond to changes of the parent size so that the correct design can be presented for each size.
+        \item
+          A solution must conform to the syntax of HTML, CSS, and JavaScript so that the compatability of tools, libraries and existing projects is retained.
+        \item
+          A solution must have adequate performance for large applications that make heavy use of responsive modules.
+        \item Extensibility
+        \item Composability
+      \end{itemize}
 
-      Third, a solution must have adequate performance for large applications that make heavy use of responsive modules.
+    \subsection{Approach}
+      In this paper we extend the concept of RWD to also include responsive modules.
+      The W3C has discussed such a feature under the name of \emph{element queries} given its analogy to media queries.
+      This paper presents a novel implementation of element queries in JavaScript named \elq, and discusses the new possibilities of GUI design that our implementation enables.
 
-      Extensibility.
-
-      Composability.
-
+      Our approach is implemented as a client side library to be included in applications.
+      One could argue that a solution does not need to be executed on the client side, but instead generate media queries on the server side for all modules with respect to the current application layout.
+      However, this is insufficient due to the modules then being limited to applications with static layouts.
+      Also, the generated media queries would not be able to respond to the user changing properties of elements such as layout and font size.
 
     \subsection{Contributions}
       This paper makes the following contributions:
@@ -228,6 +234,11 @@
   \begin{itemize}
     \item Explain media queries really short (simple example). Maybe explain some terminology.
   \end{itemize}
+
+  Media queries and element queries are similar in the sense that they both enable developers to define conditional style rules that are applied by specified criteria.
+  The main difference is the type of criteria that can be used; in media queries device, document, and media criteria are used, while element criteria are used in element queries.
+  It can somewhat simplified be described as that media queries target the document root and up (i.e., the viewport, browser, OS, device, input mechanisms, etc.) while element queries target the document root and down (i.e., elements of the document).
+
 
 \section{Overview of \elq}
   To enable element queries today, we have developed a novel JavaScript implementation named \elq.
@@ -368,36 +379,31 @@
   \subsection{Case studies}
     Plugins makes it easy to integrate.
 
+
+
 \section{Discussion}
   \begin{itemize}
     \item Performance, APIs, Features.
     \item The mirror functionality of \elq makes it uniquely suitable for nested modules.
   \end{itemize}
 
-  \subsection{Element Queries}
-    Media queries and element queries are similar in the sense that they both enable developers to define conditional style rules that are applied by specified criteria.
-    The main difference is the type of criteria that can be used; in media queries device, document, and media criteria are used, while element criteria are used in element queries.
-    It can somewhat simplified be described as that media queries target the document root and up (i.e., the viewport, browser, OS, device, input mechanisms, etc.) while element queries target the document root and down (i.e., elements of the document).
-
-    \subsubsection{Standardization}
-      It is stated on the W3C's www-style mailing list \cite{w3c_eq_mail} by Zbarsky of Mozilla, Atkins of Google and Sprehn of Google that element queries are infeasible to implement without restricting them.
-      By limiting element queries to specially separated container elements that can only be queried by child elements, many of the problems are resolved \cite{ricg_irc_log,ricg_issue_viewport}.
-      Therefore, the Responsive Issues Community Group (RICG) is currently investigating the possibility of standardizing \emph{container} queries.
-
-      Unfortunately, even such limited container queries requires significant effort to implement \cite{ricg_issue_viewport}.
-      Atkins argues that a correct and full implementation is unlikely to be implemented, and therefore it might be wiser to pursue sub-standards that aids third-party solutions instead.
-
-    \subsubsection{JavaScript implementations}
-      \begin{itemize}
-        \item Why is this pragmatic? Compatability, no impact (performance, language) on apps that do not need responsive modules.
-        \item Why must it be a client side JS library?
-        \item Note drawbacks (but only drawbacks for added functionality!).
-        \item Mention that there is related work.
-      \end{itemize}
+  \subsection{Limitations}
+    (Drawbacks)
+    No good alternative.
+    Mention RICG (perhaps standard that solves the issue in the future).
 
 
-      Although an implementation in JavaScript will most probably be less performant than a native implementation, it can still be beneficial to have such feature implemented as a third-party library to avoid complex and restricting code in browsers.
-      % In the future, we hope that Elq may use the aiding sub-standards pushed by RICG, to achieve greater flexibility and performance.
+  \subsection{Standardization}
+    It is stated on the W3C's www-style mailing list \cite{w3c_eq_mail} by Zbarsky of Mozilla, Atkins of Google and Sprehn of Google that element queries are infeasible to implement without restricting them.
+    By limiting element queries to specially separated container elements that can only be queried by child elements, many of the problems are resolved \cite{ricg_irc_log,ricg_issue_viewport}.
+    Therefore, the Responsive Issues Community Group (RICG) is currently investigating the possibility of standardizing \emph{container} queries.
+
+    Unfortunately, even such limited container queries requires significant effort to implement \cite{ricg_issue_viewport}.
+    Atkins argues that a correct and full implementation is unlikely to be implemented, and therefore it might be wiser to pursue sub-standards that aids third-party solutions instead.
+   
+    In the future, we hope that Elq may use the aiding sub-standards pushed by RICG, to achieve greater flexibility and performance.
+
+    We want RICG to standardize the following: bla bla bla
 
 \section{Related Work}
   
