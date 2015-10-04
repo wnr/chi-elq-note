@@ -202,7 +202,7 @@
     \subsection{Approach}
       In this paper we extend the concept of RWD to also include responsive modules.
       The W3C has discussed such a feature under the name of \emph{element queries} given its analogy to media queries.
-      This paper presents a novel implementation of element queries in JavaScript named \elq, and discusses the new possibilities of GUI design that our implementation enables.
+      This paper presents a novel implementation of element queries in JavaScript named \elq{}, and discusses the new possibilities of GUI design that our implementation enables.
 
       Our approach is implemented as a client side library to be included in applications.
       One could argue that a solution does not need to be executed on the client side, but instead generate media queries on the server side for all modules with respect to the current application layout.
@@ -218,10 +218,10 @@
           Our approach is the first to enable nested elements that are responsive in a modular way, i.e., styling required for RWD is fully encapsulated in the module.
           As a side effect, responsive modules may also be arbitrarily styled with CSS independently of their context.
           % An approach that enables encapsulated styling of modules crucial for element queries, such as .
-          % As a result, responsive modules using \elq may also be nested.
+          % As a result, responsive modules using \elq{} may also be nested.
         \item
           An extensible library architecture that enables plugins to significantly extend the behavior of the library.
-          This makes it possible to create plugins in order to ease integration of \elq into existing modules or libraries.
+          This makes it possible to create plugins in order to ease integration of \elq{} into existing modules or libraries.
         \item
           A new implementation technique that offers substantially higher performance than previous approaches.
           Our technique batch processes DOM operations so that layout thrashing (i.e., forcing the layout engine to perform multiple independent layouts) is avoided.
@@ -240,14 +240,14 @@
   It can somewhat simplified be described as that media queries target the document root and up (i.e., the viewport, browser, OS, device, input mechanisms, etc.) while element queries target the document root and down (i.e., elements of the document).
 
 
-\section{Overview of \elq}
-  To enable element queries today, we have developed a novel JavaScript implementation named \elq.
+\section{Overview of \elq{}}
+  To enable element queries today, we have developed a novel JavaScript implementation named \elq{}.
   Our implementation satisfied all requirements given in~\ref{sec:reqs}.
   The library have been designed to conform to the standards and specifications of the web languages while providing the features required of building advanced constellations of responsive modules.
   The novelty lies in having significantly improved performance by batch processing DOM operations, and providing an API that enables nesting of modules.
-  \elq also has excellent browser compatability as it supports Internet Explorer 8 and upwards.
+  \elq{} also has excellent browser compatability as it supports Internet Explorer 8 and upwards.
 
-  \elq is designed to be plugin-based for increased flexibility and extensibility.
+  \elq{} is designed to be plugin-based for increased flexibility and extensibility.
   By providing a good library foundation and plugins it is up to developers to choose the right plugins for each project.
   In addition, by letting the plugins satisfy the requirements it is easy to extend the library with new plugins when new requirements arise.
 
@@ -267,13 +267,13 @@
       </div>
     \end{lstlisting}
 
-    When \elq has processed the element, it will always have two classes, one for each breakpoint, that tells if the size of the element is greater or lesser than each breakpoint.
+    When \elq{} has processed the element, it will always have two classes, one for each breakpoint, that tells if the size of the element is greater or lesser than each breakpoint.
     For instance, if the element is 400 pixels wide, the element has the two classes \code{elq-min-width-300px} and \code{elq-max-width-500}.
     Similarly, if the element is 200 pixels wide the element the classes are instead \code{elq-max-width-300px} and \code{elq-max-width-500}.
     So for each breakpoint only the min/max part changes.
     It may seem alien that the classes describe that the width of the element is both maximum 300 and 500 pixels.
     This is because we have taken a user-centric approach, so that when using the classes in CSS the API is similar to element queries.
-    However, developers are free to change this API at will as \elq is plugin-based.
+    However, developers are free to change this API at will as \elq{} is plugin-based.
 
     Now that we have defined the breakpoints of the element, we can conditionally style it by using the classes.
     See listing~\ref{code:elq-breakpoints-example-css} for an example of how the classes can be used.
@@ -337,7 +337,7 @@
       Since we in the previous examples have annotated elements manually, the power and flexibility of the API have not been properly displayed.
       Only when combined with JavaScript, things get more interesting.
     \subsubsection{A high-level API}
-      To further prove the potential of \elq, we have created a plugin that enables a high-level API for responsive modules.
+      To further prove the potential of \elq{}, we have created a plugin that enables a high-level API for responsive modules.
       The API enables developers to use resposnive grids and utility classes very similar to the ones defined by the CSS Bootstrap framework.
       See listing \ref{code:elq-grid-example} for an example grid that uses the Bootstrap API.
       The grid is defined to be single columned for small viewports, triple columned for medium viewports, and double columned for large viewports.
@@ -384,7 +384,7 @@
 \section{Discussion}
   \begin{itemize}
     \item Performance, APIs, Features.
-    \item The mirror functionality of \elq makes it uniquely suitable for nested modules.
+    \item The mirror functionality of \elq{} makes it uniquely suitable for nested modules.
   \end{itemize}
 
   \subsection{Limitations}
