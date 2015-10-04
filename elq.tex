@@ -391,12 +391,115 @@
 
       This enables developers to define grid behaviors by pixel precision in nestable modules, while maintaing the familiar Bootstrap API style.
 
+      % TODO: Write how to start elq, and that is is up to developers how this should be done.
+
 \section{Extensions via plugins}
+  One our of contributions is to allow \elq{} to be easily extended with plugins.
+  For example, if annotating HTML is undesired it is possible to create a plugin that instead parses CSS.
+  Likewise, if adding breakpoint classes to element is undesired it is possible to create a plugin that does something else when a breakpoint state of an element has changed.
+  In order to enable such powerful behavior alterings by plugins, extensibility has been the main focus when designing the \elq{} architecture.
+
+  A plugin is defined by a \emph{plugin definition object} and has the structure shown in listing~\ref{code:elq-plugin-definition}.
+  \begin{lstlisting}[gobble=4,caption={},captionpos=b,label={code:elq-plugin-definition}]]
+    var myPluginDefinition = {
+      getName: function () {
+          return "my-plugin";
+      },
+      getVersion: function () {
+          return "0.0.0";
+      },
+      isCompatible: function (elq) {
+          return true;
+      },
+      make: function (elq, options) {
+          return {};
+      }
+    };
+  \end{lstlisting}
+
+  All of the methods are invoked when registered to an \elq{} instance.
+  The \code{getName} and \code{getVersion} methods tells the name and version of the plugin.
+  The \code{isCompatible} tells if the plugin is compatible with the \elq{} instance that it is registered to.
+  In the \code{make} method the plugin may initialize itself to the \elq{} instance and return an object that defines the API accessible by \elq{} and other plugins.
+
+  When necessary, \elq{} invokes certain methods of the plugin API, if implemented, to let plugins decide the behavior of the system.
+  Those methods are the following:
   \begin{itemize}
-    \item Overall architecture
-    \item Plugin API
-    \item Example plugin
+    \item \code{start(element)}
+          Called when an element is requested to be started, in order for plugins to initialize listeners and element properties.
+    \item \code{getElements(element)}
+          Called in order to let plugins reveal extra elements to be started in addition to the given element.
+    \item \code{getBreakpoints(element)}
+          Called to retrieve the current breakpoints of an element.
+    \item \code{applyBreakpointStates(element, breakpointStates)}
+          Called to apply the given breakpoint states of an element.
   \end{itemize}
+
+  In addition, plugins may also listen to the following \elq{} events:
+  \begin{itemize}
+    \item \code{resize(element)}
+          Emited when an \elq{} element has changed size.
+    \item \code{breakpointStatesChanged(element, breakpointStates)}
+          Emited when an element has changed breakpoint states (e.g., when the width of an element changed from being narrower than a breakpoint to being wider).
+  \end{itemize}
+
+  There are two main flows of the \elq{} system; starting an element and updating an element.
+  When \elq{} is requested to start an element, the following flow occurs:
+  \begin{enumerate}
+    \item The element is intialized by installing properties and a system handling listeners.
+    \item 
+          The \code{getElements} method of all plugins is called to retrieve any additional elements to start.
+          Additonal elements will go through an own flow.
+    \item The \code{start} method of all plugins is called so that plugin specific initialized may occur.
+    \item If any plugin has requested \elq{} to detect resize events of the element, an resize detector is installed.
+    \item The element is passed through the update flow.
+  \end{enumerate}
+
+  The update flow is as follows:
+  \begin{enumerate}
+    \item The \code{getBreakpoints} method of all plugins is called to retrieve all breakpoints of the element.
+    \item Breakpoint states are calculated.
+    \item If any state has changed since the previous update:
+    \begin{enumerate}
+      \item Cycle detection is performed.
+      \item The \code{applyBreakpoints} method of all plugins is called.
+      \item The \code{breakpointStatesChanged} event is emited.
+    \end{enumerate}
+  \end{enumerate}
+
+  Of course, there are options to disable some of the steps such as cycle detection and applying breakpoints.
+  In additon to being triggered by the start flow and plugins, it is also triggered by element resize events.
+
+  \subsection{Example Plugin Implementation}
+    The \code{elq-breakpoints} API that enables developers to annotate breakpoints in HTML, as described in section~\ref{}, is implemented as two plugins.
+    One plugin parses the breakpoints of the element attributes and one plugin applies the breakpoint classes.
+    The simplified code of the \code{make} method of the parsing plugin is presented in listing~\ref{}.
+    \begin{lstlisting}[gobble=6,caption={},captionpos=b,label={}]]
+      function start(element) {
+          if (!element.hasAttribute("elq-breakpoints")) {
+              return;
+          }
+
+          element.elq.resizeDetection = true;
+          element.elq.updateBreakpoints = true;
+          element.elq.applyBreakpoints = true;
+          element.elq.cycleCheck = true;
+      }
+
+      function getBreakpoints(element) {
+          return ...
+      }
+
+      // Return the plugin API
+      return {
+          start: start,
+          getBreakpoints: getBreakpoints
+      };
+    \end{lstlisting}
+
+    The applying plugin simply implements the \code{applyBreakpoints} method to alter the \code{className} property of the element by the given breakpoint states.
+
+
 
 \section{Implementation}
   Batching.
