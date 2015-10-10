@@ -37,7 +37,7 @@
 \usepackage{url}
 \usepackage{listings}
 \lstset{
-  basicstyle=\scriptsize
+  basicstyle=\scriptsize,
 }
 
 \newcommand{\code}[1]{\texttt{#1}}
@@ -109,8 +109,6 @@
   \email{phaller@kth.se}
 }
 
-% TODO: Add line number for listings.
-
 \date{10 October 2015}
 % Just remember to make sure that the TOTAL number of authors
 % is the number that will appear on the first page PLUS the
@@ -140,7 +138,7 @@
 
 \terms{Theory}
 
-\keywords{ACM proceedings, \LaTeX, text tagging} % NOT required for Proceedings
+\keywords{Responsive web design, Element queries, CSS, Modularity, Web} % NOT required for Proceedings
 
 \section{Introduction}
   % \begin{itemize}
@@ -280,14 +278,16 @@
   The cycle detection system is implemented as an conservative algorithm, and may detect false positives.
 
   \subsection{The API}
+    % TODO: Write how to start elq, and that is is up to developers how this should be done.
+
     As CSS 3 does not support custom at-rules/selectors, responsive elements are annotated in HTML by element attributes.
     The main idea is to annotate elements with breakpoints of interest so that children can be conditionally styled in CSS by targeting the different element breakpoint states.
     In this example, we will use the \code{elq-breakpoints} plugin that observers the element in order to automatically update the breakpoint classes.
     Although not written in the examples, the library also supports attributes defined with the \code{data-} prefix to conform to the HTML standard.
 
-    In listing~\ref{code:elq-breakpoints-example} we see an element that has annotated two breakpoints at 300 and 500 pixels.
+    The following is example HTML of a an element that has two annotated breakpoints at 300 and 500 pixels:
 
-    \begin{lstlisting}[gobble=6,caption={},captionpos=b,label={code:elq-breakpoints-example}]]
+    \begin{lstlisting}[gobble=6,caption={},captionpos=b,label={}]]
       <div class="foo" elq elq-breakpoints
         elq-breakpoints-widths="300 500">
         
@@ -303,10 +303,9 @@
     This is because we have taken a user-centric approach, so that when using the classes in CSS the API is similar to element queries.
     However, developers are free to change this API at will as \elq{} is plugin-based.
 
-    Now that we have defined the breakpoints of the element, we can conditionally style it by using the classes.
-    See listing~\ref{code:elq-breakpoints-example-css} for an example of how the classes can be used.
+    Now that we have defined the breakpoints of the element, we can conditionally style it in CSS by using the classes as shown in listing~\ref{code:elq-breakpoints-example-css}.
 
-    \begin{lstlisting}[gobble=6,caption={},captionpos=b,label={code:elq-breakpoints-example-css}]]
+    \begin{lstlisting}[gobble=6,caption={Example usage of the breakpoint state classes in CSS.},captionpos=b,label={code:elq-breakpoints-example-css}]]
       .foo.elq-min-width-300px.elq-max-width-500px {
         background-color: green;
       }
@@ -332,9 +331,9 @@
 
       To solve this problem, we provide a plugin that let us define elements to ``mirror'' the breakpoints classes of the nearest ancestor breakpoints element.
       Then, the conditional style of the mirror element may be written as a combinatory selector that is relative to the nearest ancestor breakpoints element.
-      See listing~\ref{code:elq-mirror-example} for example markup of the mirror plugin to enable nested modules.
+      The following is an example usage of the mirror plugin to enable nested modules:
 
-      \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={code:elq-mirror-example}]]
+      \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={}]]
         <div class="foo" elq elq-breakpoints
           elq-breakpoints-widths="300 500">
           
@@ -348,7 +347,7 @@
         </div>
       \end{lstlisting}
 
-      As the paragraph elements are mirroring the nearest \code{.foo} ancestor, we can now write CSS as shown in listing~\ref{code:elq-mirror-example-css}.
+      As the paragraph elements are mirroring the nearest \code{.foo} ancestor, we can now write CSS that does not traverse the ancestor tree:
 
       \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={code:elq-mirror-example-css}]]
         .foo {
@@ -364,12 +363,11 @@
 
       Since we in the previous examples have annotated elements manually, the power and flexibility of the API have not been properly displayed.
       Only when combined with JavaScript, things get more interesting.
+
     \subsubsection{A high-level API}
       To further prove the potential of \elq{}, we have created a plugin that enables a high-level API for responsive modules.
-      The API enables developers to use resposnive grids and utility classes very similar to the ones defined by the CSS Bootstrap framework.
-      See listing~\ref{code:bootstrap-grid-example} for an example grid that uses the Bootstrap API.
-      The example grid is defined to be single columned for small viewports, triple columned for medium viewports, and double columned for large viewports.
-      It should be noted that the last column is hidden for large viewports.
+      The API enables developers to use responsive grids and utility classes very similar to the ones defined by the CSS Bootstrap framework.
+      The following is an example grid that uses the Bootstrap API:
 
       \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={code:bootstrap-grid-example}]]
         <div class="container">
@@ -386,10 +384,13 @@
           </div>
         </div>
       \end{lstlisting}
+
+      The example grid is defined to be single columned for small viewports, triple columned for medium viewports, and double columned for large viewports.
+      It should be noted that the last column is hidden for large viewports.
       
       This API uses media queries and supports a fixed set of breakpoints that can be used to determine when the grid should change layout (depending on the viewport size).
       The column classes defines the behaviour of the grid, and has the syntax \code{col-[breakpoint]-[size]}.
-      The predefined breakpoints are \code{xs, sm, md, lg} and the size may be between 1 and 12.
+      The predefined breakpoints are \code{xs, sm, md, lg, xl} and the size may be between 1 and 12.
 
       The syntax of our API does not differ much from the Bootstrap API, but the behavior does.
       The columns of our API responds to the parent \code{row} instead of the viewport.
@@ -397,11 +398,9 @@
       The \code{breakpoint} part of the column class can be any positive number, and may optionally be postfixed with a unit.
       Currently, the supported units are \code{px, em, rem}.
       If the units is omitted, \code{px} is assumed.
-      See listing~\ref{code:elq-grid-example} for an example grid that uses our API.
-      The example grid is defined to be single columned when the width of the grid is below 500 pixels, triple columned when the width is between 500 and 700 pixels, and double columned for when the width is above 700 pixels.
-      It should be noted that the last column is hidden when the width is above 700 pixels.
+      The following is an example grid that uses our API:
 
-      \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={code:elq-grid-example}]]
+      \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={}]]
         <div class="container">
           <div class="row">
             <div class="col-500-4 col-700-6">
@@ -417,9 +416,10 @@
         </div>
       \end{lstlisting}
 
-      This enables developers to define grid behaviors by pixel precision in nestable modules, while maintaing the familiar Bootstrap API style.
+      The example grid is defined to be single columned when the width of the grid is below 500 pixels, triple columned when the width is between 500 and 700 pixels, and double columned for when the width is above 700 pixels.
+      It should be noted that the last column is hidden when the width is above 700 pixels.
 
-      % TODO: Write how to start elq, and that is is up to developers how this should be done.
+      This enables developers to define grid behaviors by pixel precision in nestable modules, while maintaing the familiar Bootstrap API style.
 
 \section{Extensions via plugins}
   One our of contributions is to allow \elq{} to be easily extended with plugins.
@@ -428,7 +428,7 @@
   In order to enable such powerful behavior alterings by plugins, extensibility has been the main focus when designing the \elq{} architecture.
 
   A plugin is defined by a \emph{plugin definition object} and has the structure shown in listing~\ref{code:elq-plugin-definition}.
-  \begin{lstlisting}[gobble=4,caption={},captionpos=b,label={code:elq-plugin-definition}]]
+  \begin{lstlisting}[gobble=4,caption={The structure of plugin definition objects.},captionpos=b,label={code:elq-plugin-definition}]]
     var myPluginDefinition = {
       getName: function () {
           return "my-plugin";
@@ -520,9 +520,7 @@
     The first plugin parses the breakpoints of the element attributes.
     The second plugin applies the breakpoint states as classes.
 
-    The simplified code of the \code{make} method of the parsing plugin is presented in listing~\ref{}.
-
-    TOOD: Write that the following is the implementation of the make method of the previous shown plugin definition (line number reference).
+    The following is a simplified implementation of the \code{make} method (see listing~\ref{code:elq-plugin-definition}) of the parsing plugin:
 
     \begin{lstlisting}[gobble=6,caption={},captionpos=b,label={}]]
       function activate(element) {
