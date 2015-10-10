@@ -431,19 +431,19 @@
   \begin{lstlisting}[gobble=4,caption={The structure of plugin definition objects.},captionpos=b,label={code:elq-plugin-definition}]]
     var myPluginDefinition = {
       getName: function () {
-          return "my-plugin";
+        return "my-plugin";
       },
       getVersion: function () {
-          return "0.0.0";
+        return "0.0.0";
       },
       isCompatible: function (elq) {
-          return true;
+        return true;
       },
       make: function (elq, options) {
-          return {
-            // Implement plugin instance methods.
-            ...
-          };
+        return {
+          // Implement plugin instance methods.
+          ...
+        };
       }
     };
   \end{lstlisting}
@@ -524,14 +524,14 @@
 
     \begin{lstlisting}[gobble=6,caption={},captionpos=b,label={}]]
       function activate(element) {
-          if (!element.hasAttribute("elq-breakpoints")) {
-              return;
-          }
+        if (!element.hasAttribute("elq-breakpoints")) {
+          return;
+        }
 
-          element.elq.resizeDetection       = true;
-          element.elq.updateBreakpoints     = true;
-          element.elq.applyBreakpointStates = true;
-          element.elq.cycleDetection        = true;
+        element.elq.resizeDetection       = true;
+        element.elq.updateBreakpoints     = true;
+        element.elq.applyBreakpointStates = true;
+        element.elq.cycleDetection        = true;
       }
 
       function getBreakpoints(element) {
@@ -542,8 +542,8 @@
 
       // Return the plugin API
       return {
-          activate: activate,
-          getBreakpoints: getBreakpoints
+        activate: activate,
+        getBreakpoints: getBreakpoints
       };
     \end{lstlisting}
 
@@ -555,6 +555,61 @@
 
 \section{Implementation}
   \subsection{Batch Processing}
+    Batch processing is the foundation of the performance gains of our approach, and is therefore used by several subsystems.
+    \elq{} uses a leveled batch processor, which is implemented as a stand-alone project.
+    It serves two purposes: to process batches in different levels to avoid layout thrashing, and to automatically process batches asynchronously for simpler usage.
+
+    Being able to process a batch in levels is important when different types of operations, that are to be processed in a specific order (usually to avoid layout thrashing), needs to be grouped together in a batch.
+    For example, a function that doubles an element's width and reads the new calculated height benefits by being batch processed in three levels: reading the width, mutating the width, and reading the height.
+    The following is an example implementation of such function that uses the leveled batch processor:
+
+    \begin{lstlisting}[gobble=6,label={},caption={},captionpos=b]]
+      var batchProcessor = ...;
+
+      function doubleWidth(element, callback) {
+        var width = element.offsetWidth;
+        var newWidth = (width * 2) + "px";
+
+        // Implicit level 0 of the batch. 
+        // Will be processed first.
+        batchProcessor.add(function mutateWidth() {
+          element.style.width = newWidth;
+        });
+
+        // Level 1 of the batch. Will be processed 
+        // after level 0. Changing the level number 
+        // from "1" to "0" results in layout thrashing.
+        batchProcessor.add(1, function readHeight() {
+          var height = element.offsetHeight;
+          callback(height);
+        });
+      }
+    \end{lstlisting}
+
+    From this example it is also clear that automated asynchronous processing of batches is important because the function may be called multiple times synchronously, like so:
+
+    \begin{lstlisting}[gobble=6,label={},caption={},captionpos=b]]
+      var elements = [...];
+      elements.forEach(function (element) {
+        doubleWidth(element, function (height) {
+          ...
+        });
+      });
+    \end{lstlisting}
+
+    Since one batch for each function call is processed, layout thrashing occurs which results in a severe performance impact.
+    To solve this, each batch is delayed to execute asynchronously so that all synchronous calls of the method is grouped into a pending batch to be executed asynchronously.
+    This results in a 45-fold speedup when applied to 1000 \glspl{element} of the function compared to not processing the batch in levels.
+    It also results in a simple API that allows multiple synchronous calls without causing layout thrashing.
+
+    The \code{activate} method of \elq{} is implemented similarly so it may also be called multiple times synchronously without performance penalties like the following example:
+
+    \begin{lstlisting}[gobble=6,label={},caption={},captionpos=b]]
+      var elements = [...];
+      elements.forEach(elq.activate);
+    \end{lstlisting}
+
+  
   \subsection{Element Resize Detection}
 
 \section{Empirical evaluation}
