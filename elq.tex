@@ -44,11 +44,10 @@
 \newcommand{\elq}{ELQ}
 \newcommand{\glspl}[1]{#1}
 \newcommand{\gls}[1]{#1}
-\newcommand{\todo}[1]{}
 
 \begin{document}
 
-\title{Allowing Responsive Web Modules}
+\title{Modular Responsive Web Design using Element Queries}
 \subtitle{}
 %
 % You need the command \numberofauthors to handle the 'placement
@@ -524,9 +523,7 @@
           element.elq.resizeDetection = true;
           element.elq.updateBreakpoints = true;
           element.elq.applyBreakpointStates = true;
-          element.elq.cycleCheck = true;
-          // TODO: Use Detection instead of Check, 
-          // to be consistent.
+          element.elq.cycleDetection = true;
       }
 
       function getBreakpoints(element) {
@@ -563,13 +560,13 @@
     % \todo{Should this measurement be given in eval? But then eval will be really small?}
     % See figure~\ref{} for a timeline of the \code{elq-breakpoints} plugin handling a resize event, where it is visually shown how insignificant the impact of the cycle detector system has on the total performance.
 
-    \todo[inline]{Include evaluation about the cycle detector?}
-    \todo[inline]{Write about the new "noclasses" option, and maybe flesh out the interplugin API section?}
-    \todo[inline]{Write that as ELQ is plugin-based, it makes sense to measure the core subsystems by themselves and the plugins enabling element queries in different setups.}
-    \todo[inline]{Have to measure how elq-breakpoints handles large amount of elements. It might suffor from layout thrashing since might read/write the DOM at invalid stages of the erd subsystem.}
-    \todo[inline]{Actually since elq-breakpoints is batch-processed, no layout thrashing occurs. However, two disjunct layouts are performed (one for the erd system and one for the plugin) which could theoretically be merged.}
-    \todo[inline]{Philipp: If possible, show graphs for other browsers than Chrome.}
-    \todo[inline]{Write about Bootstrap performance here.}
+    % \todo[inline]{Include evaluation about the cycle detector?}
+    % \todo[inline]{Write about the new "noclasses" option, and maybe flesh out the interplugin API section?}
+    % \todo[inline]{Write that as ELQ is plugin-based, it makes sense to measure the core subsystems by themselves and the plugins enabling element queries in different setups.}
+    % \todo[inline]{Have to measure how elq-breakpoints handles large amount of elements. It might suffor from layout thrashing since might read/write the DOM at invalid stages of the erd subsystem.}
+    % \todo[inline]{Actually since elq-breakpoints is batch-processed, no layout thrashing occurs. However, two disjunct layouts are performed (one for the erd system and one for the plugin) which could theoretically be merged.}
+    % \todo[inline]{Philipp: If possible, show graphs for other browsers than Chrome.}
+    % \todo[inline]{Write about Bootstrap performance here.}
 
     
     %\subsection{Element resizing detection}\label{sec:eval-perf-erd}
@@ -577,14 +574,14 @@
       The optimized \gls{ELQ} version of the scroll-based solution is also evaluated.
       Since the element resizing detection subsystem performs the heaviest tasks, only the performance of that subsystem is evaluated.
       The other subsystems entail no significant performance penalties.
-      \todo{Remove this, and analyze the different subsystems in detail: erd, cycle detector, elq-breakpoints, etc.}
+      % \todo{Remove this, and analyze the different subsystems in detail: erd, cycle detector, elq-breakpoints, etc.}
 
       The object-based solution performs well when detecting resize events.
       However, injecting \code{object} elements is quite a heavy task.
       See figure~\ref{fig:erd-original-object} for graphs that show the performance of the object-based solution.
       As shown by the graphs, the injection can be performed with adequate performance as long as the number of elements is low.
       The solution does not scale well as the number of elements increases.
-      \todo{Maybe be less pessimistic as Safari might have to use the object solution?}
+      % \todo{Maybe be less pessimistic as Safari might have to use the object solution?}
       \begin{figure*}[h]
         \tiny
         \begin{center}
@@ -760,9 +757,9 @@
         \label{table:erd-layout-engines}
       \end{table}
 
-      \todo[inline]{Present perf statistics of other browsers? Firefox still seems to favor the scroll solution (but less performant) while Safari semms to favors the object solution.}
-      \todo[inline]{Show graph for resize detection also.}
-      \todo[inline]{Graphs for Firefox, IE and Safari?}
+      % \todo[inline]{Present perf statistics of other browsers? Firefox still seems to favor the scroll solution (but less performant) while Safari semms to favors the object solution.}
+      % \todo[inline]{Show graph for resize detection also.}
+      % \todo[inline]{Graphs for Firefox, IE and Safari?}
   \subsection{Case studies}
     Plugins makes it easy to integrate.
 
