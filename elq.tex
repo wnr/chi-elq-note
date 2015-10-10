@@ -547,10 +547,11 @@
       };
     \end{lstlisting}
 
-    The applying plugin simply implements the \code{applyBreakpointStates} method to alter the \code{className} property of the element by the given element breakpoint states.
+    In the \code{activate} method the plugin registeres that resize detection is needed for the element and that is should be passed through the update flow.
+    It also enables the element to have its breakpoint states applied and have cycle detection being performed.
+    Although not shown in the simplifed implementation, \code{applyBreakpointStates} and \code{cycleDetection} are in some cases disabled.
 
-    TODO: Explain the code a bit more, what's happening?
-
+    The plugin that applies the element breakpoint states simply implements the \code{applyBreakpointStates} method to alter the \code{className} property of the element by the given element breakpoint states.
 
 \section{Implementation}
   \subsection{Batch Processing}
