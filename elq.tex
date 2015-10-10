@@ -273,9 +273,15 @@
   By providing a good library foundation and plugins it is up to developers to choose the right plugins for each project.
   In addition, by letting the plugins satisfy the requirements it is easy to extend the library with new plugins when new requirements arise.
 
-  TODO: Write about element breakpoints, and element breakpoint states.
+  An \emph{element breakpoint} is defined as a point of an element property range which can be used to define conditional behavior, similar to breakpoints of media queries.
+  For example, an element breakpoint of 500 pixels in width enables conditional styling depending on if the element is narrower or wider than 500 pixels.
+  An element may have multiple breakpoints.
+  An \emph{element breakpoint state} is defined as the state of the element breakpoint relative to the current element property value.
+  For example, if an element that is 300 pixels wide has two width breakpoints of 200 and 400 pixels the element breakpoint states are ``wider than 200 pixels'' and ``narrower than 400 pixels''.
 
-  TODO: Write about cycle detection. False positives, but not the other way around. Conservative cycle detection algorithm.
+  When the breakpoint states of an element changes, \elq{} performs cycle detection in order to detect and handle possible cyclic element queries.
+  If a cycle is detected, the new element breakpoint states are not applied in order to avoid an infinite cycle.
+  The cycle detection system is implemented as an conservative algorithm, and may detect false positives.
 
   \subsection{The API}
     As CSS 3 does not support custom at-rules/selectors, responsive elements are annotated in HTML by element attributes.
