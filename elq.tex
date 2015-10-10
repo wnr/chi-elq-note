@@ -460,10 +460,10 @@
   When necessary, \elq{} invokes certain methods of the plugin API, if implemented, to let plugins decide the behavior of the system.
   Those methods are the following:
   \begin{itemize}
-    \item \code{start(element)}
-          Called when an element is requested to be started, in order for plugins to initialize listeners and element properties.
+    \item \code{activate(element)}
+          Called when an element is requested to be activated, in order for plugins to initialize listeners and element properties.
     \item \code{getElements(element)}
-          Called in order to let plugins reveal extra elements to be started in addition to the given element.
+          Called in order to let plugins reveal extra elements to be activated in addition to the given element.
     \item \code{getBreakpoints(element)}
           Called to retrieve the current breakpoints of an element.
     \item \code{applyBreakpointStates(element, breakpointStates)}
@@ -473,41 +473,38 @@
   In addition, plugins may also listen to the following \elq{} events:
   \begin{itemize}
     \item \code{resize(element)}
-          Emited when an \elq{} element has changed size.
+          Emitted when an \elq{} element has changed size.
     \item \code{breakpointStatesChanged(element, breakpointStates)}
-          Emited when an element has changed element breakpoint states (e.g., when the width of an element changed from being narrower than a breakpoint to being wider).
+          Emitted when an element has changed element breakpoint states (e.g., when the width of an element changed from being narrower than a breakpoint to being wider).
   \end{itemize}
 
-  There are two main flows of the \elq{} system; starting an element and updating an element.
-  When \elq{} is requested to start an element, the following flow occurs:
-
-  TODO: Use active voice.
+  There are two main flows of the \elq{} system; activating an element and updating an element.
+  When \elq{} is requested to activate an element, the following flow occurs:
 
   \begin{enumerate}
-    \item The element is intialized by installing properties and a system handling listeners.
+    \item Initialize the element by installing properties and a system that handles listeners.
     \item 
-          The \code{getElements} method of all plugins is called to retrieve any additional elements to start.
-          Additonal elements will go through an own flow.
-    \item The \code{start} method of all plugins is called so that plugin specific initialized may occur.
-    \item If any plugin has requested \elq{} to detect resize events of the element, an resize detector is installed.
-    \item The element is passed through the update flow.
+          Call the \code{getElements} method of all plugins o retrieve any additional elements to activate.
+          Perform an activation flow for all additonal elements.
+    \item Call the \code{activate} method of all plugins so that plugin-specific initializations may occur.
+    \item If any plugin has requested \elq{} to detect resize events of the element, install an resize detector to the element.
+    \item Pass the element through the update flow.
   \end{enumerate}
-
 
   The update flow is as follows:
   \begin{enumerate}
-    \item The \code{getBreakpoints} method of all plugins is called to retrieve all breakpoints of the element.
+    \item Call the \code{getBreakpoints} method of all plugins to retrieve all breakpoints of the element.
     \item Element breakpoint states are calculated.
     \item If any state has changed since the previous update:
     \begin{enumerate}
       \item Perform cycle detection. If a cycle is detected, then abort the flow and emit a warning.
-      \item The \code{applyBreakpoints} method of all plugins is called. TODO: Rename to applyBreakpointStates.
-      \item The \code{breakpointStatesChanged} event is emited.
+      \item Call the \code{applyBreakpointStates} method of all plugins in order for plugins to apply the new element breakpoint states.
+      \item Emit an \code{breakpointStatesChanged} event.
     \end{enumerate}
   \end{enumerate}
 
   Of course, there are options to disable some of the steps such as cycle detection and applying breakpoint states.
-  In additon to being triggered by the start flow and plugins, it is also triggered by element resize events.
+  In additon to being triggered by the activation flow and plugins, it is also triggered by element resize events.
 
   TODO: Explain that plugins may set properties of element.elq, and also use the elq plugin API.
 
@@ -522,14 +519,14 @@
     TOOD: Write that the following is the implementation of the make method of the previous shown plugin definition (line number reference).
 
     \begin{lstlisting}[gobble=6,caption={},captionpos=b,label={}]]
-      function start(element) {
+      function activate(element) {
           if (!element.hasAttribute("elq-breakpoints")) {
               return;
           }
 
           element.elq.resizeDetection = true;
           element.elq.updateBreakpoints = true;
-          element.elq.applyBreakpoints = true;
+          element.elq.applyBreakpointStates = true;
           element.elq.cycleCheck = true;
           // TODO: Use Detection instead of Check, 
           // to be consistent.
@@ -543,12 +540,12 @@
 
       // Return the plugin API
       return {
-          start: start,
+          activate: activate,
           getBreakpoints: getBreakpoints
       };
     \end{lstlisting}
 
-    The applying plugin simply implements the \code{applyBreakpoints} method to alter the \code{className} property of the element by the given element breakpoint states.
+    The applying plugin simply implements the \code{applyBreakpointStates} method to alter the \code{className} property of the element by the given element breakpoint states.
 
     TODO: Explain the code a bit more, what's happening?
 
