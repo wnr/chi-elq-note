@@ -502,7 +502,17 @@
   Of course, there are options to disable some of the steps such as cycle detection and applying breakpoint states.
   In additon to being triggered by the activation flow and plugins, it is also triggered by element resize events.
 
-  TODO: Explain that plugins may set properties of element.elq, and also use the elq plugin API.
+  Plugins may also use an extended API of \elq{} that offers access to subsystems such as the plugin handler, cycle detector, batch processor, etc.
+  The extended API is given to a plugin as an argument to the \code{make} method of the plugin definition object.
+  In addition, plugins may set behavior properties of an element by the \code{element.elq} property.
+  It is also possible for plugins to define own behavior properties for inter-plugin collaboration, or for storing plugin-specifc element state.
+  Examples of behavior properties of the \elq{} core are:
+  \begin{itemize}
+    \item \code{resizeDetection} Tells if resize detection should be performed.
+    \item \code{cycleDetection} Tells if cycle detection should be performed.
+    \item \code{updateBreakpoints} Tells if the element should be passed through the update flow.
+    \item \code{applyBreakpointStates} Tells plugins may apply breakpoint states of the element (it is needed fore some elements to only emit element breakpoint states changes, without applying them to the actual element).
+  \end{itemize}
 
   \subsection{Example Plugin Implementation}
     The \code{elq-breakpoints} API that enables developers to annotate breakpoints in HTML, as described in section~\ref{}, is implemented as two plugins.
@@ -520,10 +530,10 @@
               return;
           }
 
-          element.elq.resizeDetection = true;
-          element.elq.updateBreakpoints = true;
+          element.elq.resizeDetection       = true;
+          element.elq.updateBreakpoints     = true;
           element.elq.applyBreakpointStates = true;
-          element.elq.cycleDetection = true;
+          element.elq.cycleDetection        = true;
       }
 
       function getBreakpoints(element) {
@@ -545,8 +555,8 @@
 
 
 \section{Implementation}
-  Batching.
-  Resize listening.
+  \subsection{Batch Processing}
+  \subsection{Element Resize Detection}
 
 \section{Empirical evaluation}
   \subsection{Performance}
@@ -802,12 +812,7 @@
 
 %ACKNOWLEDGMENTS are optional
 \section{Acknowledgments}
-This section is optional; it is a location for you
-to acknowledge grants, funding, editing assistance and
-what have you.  In the present case, for example, the
-authors would like to thank Gerald Murray of ACM for
-his help in codifying this \textit{Author's Guide}
-and the \textbf{.cls} and \textbf{.tex} files that it describes.
+The authors would like to thank EVRY AB for sponsoring the \elq{} project, and the supporting projects for element resize detection and batch processing.
 
 %
 % The following two commands are all you need in the
