@@ -554,7 +554,7 @@
     The plugin that applies the element breakpoint states simply implements the \code{applyBreakpointStates} method to alter the \code{className} property of the element by the given element breakpoint states.
 
 \section{Implementation}
-  \subsection{Batch Processing}
+  \subsection{Batch Processing}\label{sec:imp_batch_processor}
     Batch processing is the foundation of the performance gains of our approach, and is therefore used by several subsystems.
     \elq{} uses a leveled batch processor, which is implemented as a stand-alone project.
     It serves two purposes: to process batches in different levels to avoid layout thrashing, and to automatically process batches asynchronously for simpler usage.
@@ -599,7 +599,7 @@
 
     Since one batch for each function call is processed, layout thrashing occurs which results in a severe performance impact.
     To solve this, each batch is delayed to execute asynchronously so that all synchronous calls of the method is grouped into a pending batch to be executed asynchronously.
-    This results in a 45-fold speedup when applied to 1000 \glspl{element} of the function compared to not processing the batch in levels.
+    This results in a 45-fold speedup when applied to 1000 elements of the function compared to not processing the batch in levels.
     It also results in a simple API that allows multiple synchronous calls without causing layout thrashing.
 
     The \code{activate} method of \elq{} is implemented similarly so it may also be called multiple times synchronously without performance penalties like the following example:
@@ -608,9 +608,83 @@
       var elements = [...];
       elements.forEach(elq.activate);
     \end{lstlisting}
-
   
   \subsection{Element Resize Detection}
+    Unfortunately, there is no standardized resize event for arbitrary elements \cite{w3c_dom2_events}.
+    Only documents emit resize events in modern browsers and therefore such events can only be observed for frame elements (since a frame \gls{element} has its own \gls{document}).
+    According to the general use case described in Section~\ref{sec:eq-definitions}, a valid limitation is to only support \gls{element} resize detection for non-void elements (i.e., elements that may contain content).
+    This limitation is important since most approaches depend on injecting elements into the target \gls{element}.
+    It is a reasonable limitation since void elements can easily be wrapped with non-void elements without affecting the page visually.
+
+    A naive approach to detecting element resize events is to have a script continously checking elements if they have resized given some interval (also known as polling).
+    This approach is appealing because it does not mutate the \gls{DOM}, supports arbitrary elements, and it provides excellent compatibility.
+    However, in order to prevent the \gls{responsive} elements lagging behind the size changes of the user interface, polling needs to be performed quite frequently.
+    The problem is that each poll would force the layout queue to be flushed since the computed style of elements needs to be retrieved in order to know if elements have resized or not.
+    Since the polling is performed all the time the overall page performance is decreased even if the page is idle, which is undesired especially for devices running on battery.
+    % \todo{Should make quick test to see how much CPU it uses when polling frequently}
+
+
+    % AHA! So we have actually improved an algorithm that increases the battery-life of mobile devices, which I recall reading about in the mobility track of WWW.    
+
+    % TODO: Write something about that element resize detection cannot only listen to document.resize, as resizes may happen as a result of other stuff (such as JS, CSS, menu-expanding, zooming, etc.).
+
+    It is desired to instead have an event-based approach that only performs additional computations when an actual element resize has happened.
+    This is achieved by the resize detection subsystem of \elq{} by using two independent injecting approaches, both originally presented by \cite{backalley}.
+
+    The first approach is to inject \code{object} elements into the target element, which can be listened to resize events since \code{object} elements are frames.
+    The \code{object} is styled so that it always matches the size of the target \gls{element} and so that it does not affect the page visually.
+    This approach has good browser compatability and excellent resize detection performance, but imposes severe performance impacts during injection since \code{object} elements use a significant amount of memory.
+    The main algorithm that is performed when an element $e$ is to be observed for resize events is the following:
+    \begin{enumerate}
+      \item\label{itm:erd-algo-original-object-1} Get the computed style of $e$.
+      \item                                       If the element is positioned (i.e., \code{position} is not \code{static}) the next step is \ref{itm:erd-algo-original-object-4}.
+      \item\label{itm:erd-algo-original-object-3} Set the position of $e$ to be \code{relative}. Here additional checks can be performed to warn the developer about unwanted side effects of doing this.
+      \item\label{itm:erd-algo-original-object-4} Create an \code{object} element and attach an event handler for the \code{load} event\footnote{See \url{http://www.w3.org/TR/DOM-Level-3-Events/\#event-type-load} for more information about the load event.}. When the element has been styled and configured properly, it is injected into~$e$.
+      \item                                       The algorithm waits for the \code{load} event handler to be called by the \gls{layout engine}. When the handler is called, a \code{resize} event handler is attached to the \gls{document} of the \code{object} \gls{element}.
+    \end{enumerate}
+
+    Step \ref{itm:erd-algo-original-object-1} and \ref{itm:erd-algo-original-object-3} could theoretically be executed in different batches to avoid \gls{layout thrashing}.
+    Unfortunately, each \code{object} element creation in step \ref{itm:erd-algo-original-object-4} forces a full layout, which makes the batch processing optimization negligible.
+    Since the creation of \code{object} elements forms the significant performance penalty, no further optimization attempts were made.
+
+    The second approach is to injects an \gls{element} that contains multiple overflowing elements that listen to scroll events.
+    The overflowing elements are styled so that \code{scroll} events are emitted when the target \gls{element} is resized.
+    For detecting when the target \gls{element} shrinks, two elements are needed; one for handling the scrollbars and one for causing them to scroll.
+    Similarly, for detecting when the target \gls{element} expands, two elements are needed in the same way.
+    As this solution only injects \code{div} elements, it offers greater opportunities for optimizations.
+    The main algorithm that is performed when an element $e$ is to be observed for resize events is the following:
+    \begin{enumerate}
+      \item\label{itm:erd-algo-original-scroll-1} Get the computed style of $e$.
+      \item\label{itm:erd-algo-original-scroll-2} If the element is positioned (i.e., \code{position} is not \code{static}) the next step is \ref{itm:erd-algo-original-scroll-4}.
+      \item\label{itm:erd-algo-original-scroll-3} Set the position of $e$ to be \code{relative}. Here additional checks can be performed to warn the developer about unwanted side effects of doing this.
+      \item\label{itm:erd-algo-original-scroll-4} Create the four elements needed (two for detecting when $e$ shrinks, and two for detecting when $e$ expands) and attach event handlers for the \code{scroll} event of the elements.
+                                                  When the elements have been styled and configured properly, they are added as children to an additional container element that is injected into $e$.
+      \item\label{itm:erd-algo-original-scroll-5} The current size of $e$ is stored and the scrollbars of the injected elements are positioned correctly.
+      \item\label{itm:erd-algo-original-scroll-6} The algorithm waits for the \code{scroll} event handlers to be called asynchronously by the \gls{layout engine} (they are called since the previous step repositioned the scrollbars).
+                                                  When the handlers have been called, the injection is finished and observers can be notified on resize events of $e$ when \code{scroll} events occur.
+    \end{enumerate}
+
+    Layout thrashing can be avoided by using the leveled batch processor described in Section~\ref{sec:imp_batch_processor}.
+    The algorithm steps are batch processed in the following levels:
+    \begin{enumerate}
+      \item\label{itm:erd-algo-scroll-level-1}
+        \textbf{The read level:}
+        Step \ref{itm:erd-algo-original-scroll-1} is performed to obtain all necessary information about $e$.
+        The information is stored in a shared state so that all other steps can obtain the information without reading the \gls{DOM}.
+      \item\label{itm:erd-algo-scroll-level-2}
+        \textbf{The mutation level:}
+        Steps \ref{itm:erd-algo-original-scroll-2}, \ref{itm:erd-algo-original-scroll-3} and \ref{itm:erd-algo-original-scroll-4} are performed, which mutate the \gls{DOM}.
+        All mutations performed in this level can be queued by \glspl{layout engine}.
+      \item\label{itm:erd-algo-scroll-level-3}
+        \textbf{The forced layout level:}
+        % \todo{Grammar?}
+        Step \ref{itm:erd-algo-original-scroll-5} is performed, which forces the \gls{layout engine} to perform a layout.
+    \end{enumerate}
+
+    Since repositioning a scrollbar in some layout engines forces a layout, such operations need to be performed after that all other queueable operations have been executed.
+    Therefore, step~\ref{itm:erd-algo-original-scroll-5} is performed in level~\ref{itm:erd-algo-scroll-level-3} as the last step.
+    Even if some layout engines are unable to queue the repositing of scrollbars, it is still beneficial to batch process the algorithm since only pure layouts need to be performed (instead of having to recompute styles and synchronize the \gls{DOM} and \glspl{render tree} before each layout).
+    As step~\ref{itm:erd-algo-original-scroll-6} is performed by the \gls{layout engine} asynchronously and does not interact with the \gls{DOM}, it does not need to be batch processed.
 
 \section{Empirical evaluation}
   \subsection{Performance}
@@ -688,7 +762,7 @@
               \end{axis}
             \end{tikzpicture}
           \end{minipage}
-        \caption{The injection performance of the object-based solution. The left graph shows the injection time. The right graph shows the heap memory used when all \code{object} \glspl{element} have been injected.}
+        \caption{The injection performance of the object-based solution. The left graph shows the injection time. The right graph shows the heap memory used when all \code{object} elements have been injected.}
         \label{fig:erd-original-object}
         \end{center}
       \end{figure*}
@@ -699,16 +773,16 @@
       % Both scroll-based solutions have the same memory footprint (i.e., too low for reliable measurements).
 
       The scroll-based solution also performs well when detecting resize events.
-      As no \code{object} \glspl{element} are injected the memory footprint is reduced significantly, which improves the injection performance.
+      As no \code{object} elements are injected the memory footprint is reduced significantly, which improves the injection performance.
       See figure~\ref{fig:erd-original-scroll} for graphs that show how both solutions perform compared to each other.
       It is clear that the scroll-based solution both performs and scales better than the object-based solution during injection.        
-      The amount of memory used by the scroll-based solution is so low that reliable measurements could not be gathered, as the number of \glspl{element} was not high enough to affect the memory usage noticeably.
+      The amount of memory used by the scroll-based solution is so low that reliable measurements could not be gathered, as the number of elements was not high enough to affect the memory usage noticeably.
 
       Recall that the scroll-based solution was rewritten and optimized, which is referred to as the \gls{ELQ} scroll-based solution.
       By avoiding \gls{layout thrashing}, the injection performance was improved significantly.
       See figure~\ref{fig:erd-elq-scroll} for graphs that show how it performs compared to the other solutions.
       As evident in the figure, the optimized \gls{ELQ} solution has significantly reduced injection times compared to the other two.
-      It achieves a 32-fold speedup compared to the object-based solution and a 13-fold speedup compared to the scroll-based solution when preparing 500 \glspl{element} for resize detection.
+      It achieves a 32-fold speedup compared to the object-based solution and a 13-fold speedup compared to the scroll-based solution when preparing 500 elements for resize detection.
       The \gls{ELQ} solution also scales better, as more clearly shown in figure~\ref{fig:erd-solutions-regressed} that includes polynomial regression graphs for all three solutions.
       Both scroll-based solutions have the same memory footprint (i.e., too low for reliable measurements).
       \begin{figure*}[h]
@@ -727,7 +801,7 @@
                     width=\textwidth, % Scale the plot to \linewidth
                     grid=major, % Display a grid
                     grid style={dashed,gray!30}, % Set the style
-                    xlabel=Number of \glspl{element}, % Set the labels
+                    xlabel=Number of elements, % Set the labels
                     ylabel=Injection time,
                     y unit=s, % Set the respective units
                     legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
@@ -745,7 +819,7 @@
                   width=\textwidth, % Scale the plot to \linewidth
                   grid=major, % Display a grid
                   grid style={dashed,gray!30}, % Set the style
-                  xlabel=Number of \glspl{element}, % Set the labels
+                  xlabel=Number of elements, % Set the labels
                   ylabel=Injection time,
                   y unit=s, % Set the respective units
                   legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
@@ -774,7 +848,7 @@
                 width=0.5\textwidth, % Scale the plot to \linewidth
                 grid=major, % Display a grid
                 grid style={dashed,gray!30}, % Set the style
-                xlabel=Number of \glspl{element}, % Set the labels
+                xlabel=Number of elements, % Set the labels
                 ylabel=Injection time,
                 y unit=s, % Set the respective units
                 legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
@@ -798,9 +872,9 @@
       \paragraph{Firefox and Safari}
       As shown, great performance can be achieved with the optimized \gls{ELQ} scroll-based solution in Chrome.
       Unfortunately, there is no silver bullet to observing element resize events; as the other \glspl{browser} behave differently.
-      See table~\ref{table:erd-layout-engines} for the performance of the object-based and scroll-based solutions operating on 100 \glspl{element} in different \glspl{browser}.
-      The \gls{ELQ} scroll-based solution is preferred for Chrome, as the injection is 32-fold faster (when operating on 500 \glspl{element}) than the object-based solution while the resize detection performance is the same for both solutions.
-      In Firefox, the object-based solution detects resize events 2-fold faster than the \gls{ELQ} scroll-based solution when operating on 100 \glspl{element} (still, 100 ms for detecting resize events is acceptable).
+      See table~\ref{table:erd-layout-engines} for the performance of the object-based and scroll-based solutions operating on 100 elements in different \glspl{browser}.
+      The \gls{ELQ} scroll-based solution is preferred for Chrome, as the injection is 32-fold faster (when operating on 500 elements) than the object-based solution while the resize detection performance is the same for both solutions.
+      In Firefox, the object-based solution detects resize events 2-fold faster than the \gls{ELQ} scroll-based solution when operating on 100 elements (still, 100 ms for detecting resize events is acceptable).
       However, the injection time needed for the object-based solution is 5.5-fold of the time needed for the \gls{ELQ} scroll-based solution.
       The \gls{ELQ} scroll-based solution is therefore probably desired in Firefox for the general use case (as described in Section~\ref{sec:eq-definitions}).
       In Safari, the \gls{ELQ} scroll-based solution detects resize events in 800 ms while the object-based solution detects them in 25 ms, which of course is unacceptable.
@@ -817,7 +891,7 @@
           \gls{Gecko}   & \textbf{200 ms}  & 1100 ms   & 100 ms  & \textbf{50 ms}  \\
           \gls{WebKit}  & \textbf{100 ms}  & 300 ms    & 800 ms  & \textbf{25 ms}  \\
         \end{tabular}
-        \caption{Performance of the object-based and \gls{ELQ} scroll-based solutions in different \glspl{layout engine} when operating on 100 \glspl{element}.}
+        \caption{Performance of the object-based and \gls{ELQ} scroll-based solutions in different \glspl{layout engine} when operating on 100 elements.}
         \label{table:erd-layout-engines}
       \end{table}
 
@@ -839,6 +913,29 @@
     (Drawbacks)
     No good alternative.
     Mention RICG (perhaps standard that solves the issue in the future).
+
+    % All three solutions mutate the \gls{DOM} and rely on special \gls{element} behavior, but they offer many advantages over polling.
+    % Since they are event based, \glspl{layout engine} only need to perform extra work when injecting the elements to the target elements and when the target elements actually resize.
+    % Event-based resize detection also implies minimal delay between the actual resize event and the detection.
+    % By positioning the injected elements \code{absolute} with widths and heights set to \code{100\%} and the \code{visibility} set to \code{hidden}, the injected elements do not affect the visual representation of the \gls{document}.
+    % However, injecting elements into target elements has some implications:
+    % \begin{itemize}
+    %   \item \textbf{\gls{CSS} selectors may break}:
+    %     Since target elements get an extra child, \gls{CSS} selectors may behave differently.
+    %     For instance, the selector \code{\#target~*} also matches the injected elements, which may result in them being styled in an undesired way.
+    %     Especially the scroll-based solution is sensitive to unintentional styles being applied, as the injected elements are finely styled and tuned in order to behave as desired.
+    %     Additionally, selectors such as \code{:first-child} and \code{:last-child} may not behave as expected.
+    %   \item \textbf{\gls{JavaScript} may break}:
+    %     Similar to with \gls{CSS} selectors, \gls{JavaScript} \gls{DOM} selectors may break.
+    %     The first node (or last) of the target \gls{element} may not be what developers expect it to be as the target element has an extra child.
+    %     Also, code that alter the content of a target \gls{element} (such as \code{element.InnerHTML = ...}) may undesirably remove the injected \gls{element}.
+    %   \item \textbf{The target \gls{element} must be positioned}:
+    %     Absolute positioned elements cannot be styled relative to \code{static} positioned elements and are therefore moved up to the first non-static positioned ancestor in the render tree \cite{w3c_visuren}.
+    %     Since the injected element must be a child of the target \gls{element} (and not moved upwards in the render tree), the target \gls{element} cannot be positioned \code{static} (i.e., the default positioning for many elements).
+    %     Fortunately, elements positioned \code{relative} behave exactly like \code{static}, given they do not have any styles applicable to relative elements (such as \code{top} or \code{bottom}).
+    %     Since the style properties that depend on the \gls{element} being \code{relative} positioned do not affect the \gls{element} if it is positioned \code{static}, the properties can be removed or regarded as developer errors.
+    %     This way target elements can be positioned \code{relative} with the special style properties removed, to obtain the same visual representation as being positioned \code{static}.
+    % \end{itemize}
 
 
   \subsection{Standardization}
