@@ -149,7 +149,7 @@
   % \end{itemize}
 
   Responsive Web Design (RWD) is an approach to make an application respond to the viewport size and device characteristics.
-  This is currently achieved by using CSS media queries that are designed to conditionally design content by the media, such as using serif fonts when printed and sans-serif when viewed on a screen.
+  This is currently achieved by using CSS media queries that are designed to conditionally design content by the media, such as using serif fonts when printed and sans-serif when viewed on a screen \cite{w3c_css_mq}.
 
   In order to reduce complexity and enable reusability applications are typically composed of modules, i.e., interchangeable and independent parts that have a single and well-defined responsibility \cite{parnas1972criteria}.
   In order for a module to be reusable it must not assume in which context it is being used.
@@ -169,8 +169,8 @@
     %   \item Limitations of MQ regarding font-size (em).
     % \end{itemize}
     
-    Imagine an application that displays the current weather of various cities as widgets, by using a weather widget module.
-    The module should be responsive, so that more information such as a temperature graph over time is displayed when the widget is big.
+    Imagine a single page application that displays the current weather of various cities as widgets, by using a weather widget module.
+    The module should be responsive so that more information, such as a temperature graph over time, is displayed when the widget is big.
     When the widget is small it should only display the current temperature.
     Users should also be able to add, remove and resize widgets.
 
@@ -203,28 +203,31 @@
       The desired behavior of a responsive module is having its inner design responding to the size of \emph{its container} instead of the viewport.
       Only then is a responsive module independent of its layout context.
       Realizing responsive modules requires CSS rules that are conditional upon \emph{elements}, instead of the global viewport.
+      We have identified the following requirements of a solution:
 
       \begin{itemize}
         \item 
-          A solution must provide a possibility for an element to change depending on the properties of the parent element.
+          It must provide a possibility for an element to change depending on the properties of the parent element.
           Elements should automatically respond to changes of the parent size so that the correct design can be presented for each size.
         \item
-          A solution must conform to the syntax of HTML, CSS, and JavaScript so that the compatability of tools, libraries and existing projects is retained.
+          It must conform to the syntax of HTML, CSS, and JavaScript so that the compatability of tools, libraries and existing projects is retained.
         \item
-          A solution must have adequate performance for large applications that make heavy use of responsive modules.
+          It must have adequate performance for large applications that make heavy use of responsive modules.
         \item
-          A solution must enable developers to write encapsulated style rules so that responsive modules may be arbitrarily componsed without any conflicting style rules.
+          It must enable developers to write encapsulated style rules so that responsive modules may be arbitrarily componsed without any conflicting style rules.
       \end{itemize}
 
     \subsection{Approach}
       In this paper we extend the concept of RWD to also include responsive modules.
-      The W3C has discussed such a feature under the name of \emph{element queries} given its analogy to media queries.
-      This paper presents a novel implementation of element queries in JavaScript named \elq{}, and discusses the new possibilities of GUI design that our implementation enables.
+      The W3C has discussed such a feature under the name of \emph{element queries} given its analogy to media queries \cite{w3c_eq_mail}.
+      This paper presents a novel implementation of element queries in JavaScript named \elq{} that enables new possibilities of GUI design of web applications.
 
       Our approach is implemented as a client side library to be included in applications.
       One could argue that a solution does not need to be executed on the client side, but instead generate media queries on the server side for all modules with respect to the current application layout.
       However, this is insufficient due to the modules then being limited to applications with static layouts.
       Also, the generated media queries would not be able to respond to the user changing properties of elements such as layout and font size.
+
+      TODO: Does the last paragraph belong here? Maybe it should be moved to the discussion.
 
     \subsection{Contributions}
       This paper makes the following contributions:
@@ -238,10 +241,10 @@
           % As a result, responsive modules using \elq{} may also be nested.
         \item
           An extensible library architecture that enables plugins to significantly extend the behavior of the library.
-          This makes it possible to create plugins in order to ease integration of \elq{} into existing modules or libraries.
+          This makes it possible to create plugins in order to enable new features and to ease integration of \elq{} into existing modules or libraries.
         \item
-          A new implementation technique that offers substantially higher performance than previous approaches.
-          Our technique batch processes DOM operations so that layout thrashing (i.e., forcing the layout engine to perform multiple independent layouts) is avoided.
+          A new implementation that offers substantially higher performance than previous approaches.
+          The implementation batch processes DOM operations so that layout thrashing (i.e., forcing the layout engine to perform multiple independent layouts) is avoided.
       \end{itemize}
 
     The rest of the paper is organized as follows:
@@ -254,12 +257,12 @@
     \item Explain media queries really short (simple example). Maybe explain some terminology.
   \end{itemize}
 
-  Media queries and element queries are similar in the sense that they both enable developers to define conditional style rules that are applied by specified criteria.
+  Media queries and element queries are similar in the sense that they both enable developers to define conditional designs that are applied by specified criteria.
   The main difference is the type of criteria that can be used; in media queries device, document, and media criteria are used, while element criteria are used in element queries.
   It can somewhat simplified be described as that media queries target the document root and up (i.e., the viewport, browser, OS, device, input mechanisms, etc.) while element queries target the document root and down (i.e., elements of the document).
 
 \section{Overview of \elq{}}
-  To enable element queries today, we have developed a novel JavaScript implementation named \elq{}.
+  To enable element queries, we have developed a novel JavaScript implementation named \elq{}.
   Our implementation satisfied all requirements given in~\ref{sec:reqs}.
   The library have been designed to conform to the standards and specifications of the web languages while providing the features required of building advanced constellations of responsive modules.
   The novelty lies in having significantly improved performance by batch processing DOM operations, and providing an API that enables nesting of modules.
@@ -275,17 +278,17 @@
   An \emph{element breakpoint state} is defined as the state of the element breakpoint relative to the current element property value.
   For example, if an element that is 300 pixels wide has two width breakpoints of 200 and 400 pixels the element breakpoint states are ``wider than 200 pixels'' and ``narrower than 400 pixels''.
 
-  When the breakpoint states of an element changes, \elq{} performs cycle detection in order to detect and handle possible cyclic element queries.
-  If a cycle is detected, the new element breakpoint states are not applied in order to avoid an infinite cycle.
-  The cycle detection system is implemented as an conservative algorithm, and may detect false positives.
+  When the breakpoint states of an element changes, \elq{} performs cycle detection in order to detect and handle possible style cycles.
+  If a cycle is detected, the new element breakpoint states are not applied in order to avoid an infinite loop of layouts.
+  The cycle detection system is implemented as an conservative algorithm, and may in some cases detect false positives.
 
   \subsection{The API}\label{sec:elq-api}
-    As CSS 3 does not support custom at-rules/selectors, responsive elements are annotated in HTML by element attributes.
+    As CSS 3 does not support custom at-rules/selectors \cite{w3c_css_selectors}, responsive elements are annotated in HTML by element attributes.
     The main idea is to annotate elements with breakpoints of interest so that children can be conditionally styled in CSS by targeting the different element breakpoint states.
-    In this example, we will use the \code{elq-breakpoints} plugin that observers the element in order to automatically update the breakpoint classes.
+    In this section, we will use the \code{elq-breakpoints} API (that is bundled with \elq{} as default) that observes an element in order to automatically update breakpoint state classes of the element.
     Although not written in the examples, the library also supports attributes defined with the \code{data-} prefix to conform to the HTML standard.
 
-    The following is example HTML of a an element that has two annotated breakpoints at 300 and 500 pixels:
+    The following is example HTML of an element that has two annotated width breakpoints at 300 and 500 pixels:
 
     \begin{lstlisting}[gobble=6,caption={},captionpos=b,label={}]]
       <div class="foo" elq elq-breakpoints
@@ -295,26 +298,26 @@
       </div>
     \end{lstlisting}
 
-    When \elq{} has processed the element, it will always have two classes, one for each breakpoint, that tells if the size of the element is greater or lesser than each breakpoint.
-    For instance, if the element is 400 pixels wide, the element has the two classes \code{elq-min-width-300px} and \code{elq-max-width-500}.
-    Similarly, if the element is 200 pixels wide the element the classes are instead \code{elq-max-width-300px} and \code{elq-max-width-500}.
+    When \elq{} has processed the element it will have two classes that reflects each breakpoint state.
+    For instance, if the element is 400 pixels wide, the element has the two classes \code{elq-min-width-300px} and \code{elq-max-width-500px}.
+    Similarly, if the element is 200 pixels wide the classes are instead \code{elq-max-width-300px} and \code{elq-max-width-500px}.
     So for each breakpoint only the min/max part changes.
     It may seem alien that the classes describe that the width of the element is both maximum 300 and 500 pixels.
-    This is because we have taken a user-centric approach, so that when using the classes in CSS the API is similar to element queries.
+    This is because we have taken a user-centric approach so that the CSS usage of the classes is similar to the API of media queries.
     However, developers are free to change this API at will as \elq{} is plugin-based.
 
     Now that we have defined the breakpoints of the element, we can conditionally style it in CSS by using the classes as shown in listing~\ref{code:elq-breakpoints-example-css}.
 
     \begin{lstlisting}[gobble=6,caption={Example usage of the breakpoint state classes in CSS.},captionpos=b,label={code:elq-breakpoints-example-css}]]
+      .foo.elq-max-width-300px {
+        background-color: blue;
+      }
+
       .foo.elq-min-width-300px.elq-max-width-500px {
         background-color: green;
       }
 
-      .foo.elq-min-width-500px {
-        background-color: blue;
-      }
-
-      .foo.elq-max-width-500px p {
+      .foo.elq-min-width-500px p {
         color: white;
       }
     \end{lstlisting}
@@ -345,12 +348,11 @@
     This can for example be achieved with a plugin that listens to DOM mutations and performs the activation automatically, or a plugin that parses CSS and activates all elements that has any conditional style defined.
 
     \subsubsection{Nested modules}
-      This API is sufficient for applications that do not need nested breakpoint elements, and similar features is provided by related libraries.
+      The \code{elq-breakpoints} API is sufficient for applications that do not need nested breakpoint elements, and similar features are provided by related libraries such as \cite{eq_imp_eqjs,eq_imp_responsive-elements-2}.
       However, using such API in responsive modules still limits the reusability since the modules then may not exist in an outer responsive context.
-      Also, it is customary to compose large/complex modules by smaller modules that may also need to be responsive \cite{parnas1972criteria}.
 
       The reason this API is not sufficient for nested modules is because there is no way to limit the CSS matching search of the selectors.
-      The selector of the last example given in listing~\ref{code:elq-breakpoints-example-css} specifies that all paragraph elements should have white text if \emph{any} ancestor breakpoints element is above 500 pixels wide.
+      The last style rule of the example given in listing~\ref{code:elq-breakpoints-example-css} specifies that all paragraph elements should have white text if \emph{any} ancestor breakpoints element is wider than 500 pixels.
       Since the ancestor selector may match elements outside of the module, such selectors are dangerous to use in the context of responsive modules.
       The problem may be somewhat reduced by more specific selectors and such, but it cannot be fully solved for arbitrary styling.
 
@@ -376,21 +378,21 @@
 
       \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={code:elq-mirror-example-css}]]
         .foo {
-          /* So that the nested module 
-             behaves differently */
+          /* So that the nested modules
+             have different size */
           width: 50%;
         }
 
-        .foo p.elq-max-width-500px {
+        .foo p.elq-min-width-500px {
           color: white;
         }
       \end{lstlisting}
 
-      Since we in the previous examples have annotated elements manually, the power and flexibility of the API have not been properly displayed.
-      Only when combined with JavaScript, things get more interesting.
+      Since we in the examples given so far have annotated elements breakpoints manually, the power and flexibility of the API have not been properly displayed.
+      In the next Section, we'll present an API that combines JavaScript and generated CSS in order to create a high-level API.
 
     \subsubsection{A high-level Bootstrap-like API}
-      To further prove the potential of \elq{}, we have created a plugin that enables a high-level API for responsive modules.
+      To further show the potential of \elq{}, we have created a plugin that enables a high-level API for responsive modules.
       The API enables developers to use responsive grids and utility classes very similar to the ones defined by the CSS Bootstrap framework.
       The following is an example grid that uses the Bootstrap API:
 
@@ -418,11 +420,11 @@
       The predefined breakpoints are \code{xs, sm, md, lg, xl} and the size may be between 1 and 12.
 
       The syntax of our API does not differ much from the Bootstrap API, but the behavior does.
-      The columns of our API responds to the parent \code{row} instead of the viewport.
+      The columns of our API respond to the parent \code{row} instead of the viewport.
       Therefore, we have altered the column classes to also accept custom breakpoints so that developers have full control of the grid behavior.
-      The \code{breakpoint} part of the column class can be any positive number, and may optionally be postfixed with a unit.
+      The \code{[breakpoint]} part of the column class can be any positive number, and may optionally be postfixed with a unit.
       Currently, the supported units are \code{px, em, rem}.
-      If the units is omitted, \code{px} is assumed.
+      If the unit is omitted, \code{px} is assumed.
       The following is an example grid that uses our API:
 
       \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={}]]
@@ -446,10 +448,12 @@
 
       This enables developers to define grid behaviors by pixel precision in nestable modules, while maintaing the familiar Bootstrap API style.
 
+      TODO: Write about generated CSS?
+
 \section{Extensions via plugins}
   One our of contributions is to allow \elq{} to be easily extended with plugins.
-  For example, if annotating HTML is undesired it is possible to create a plugin that instead parses CSS.
-  Likewise, if adding breakpoint classes to element is undesired it is possible to create a plugin that does something else when an element breakpoint state of an element has changed.
+  For example, if annotating HTML is undesired it is possible to create a plugin that instead generates element breakpoints by parsing CSS.
+  Likewise, if adding breakpoint state classes to elements is undesired it is possible to create a plugin that does something else when an element breakpoint state has changed.
   In order to enable such powerful behavior alterings by plugins, extensibility has been the main focus when designing the \elq{} architecture.
 
   A plugin is defined by a \emph{plugin definition object} and has the structure shown in listing~\ref{code:elq-plugin-definition}.
@@ -476,7 +480,7 @@
   All of the methods are invoked when registered to an \elq{} instance.
   The \code{getName} and \code{getVersion} methods tells the name and version of the plugin.
   The \code{isCompatible} tells if the plugin is compatible with the \elq{} instance that it is registered to.
-  In the \code{make} method the plugin may initialize itself to the \elq{} instance and return an object that defines the API accessible by \elq{} and other plugins.
+  In the \code{make} method the plugin may initialize itself to the \elq{} instance and return an object that defines the plugin API accessible by \elq{} and other plugins.
 
   When necessary, \elq{} invokes certain methods of the plugin API, if implemented, to let plugins decide the behavior of the system.
   Those methods are the following:
