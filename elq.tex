@@ -277,7 +277,7 @@
   If a cycle is detected, the new element breakpoint states are not applied in order to avoid an infinite cycle.
   The cycle detection system is implemented as an conservative algorithm, and may detect false positives.
 
-  \subsection{The API}
+  \subsection{The API}\label{sec:elq-api}
     % TODO: Write how to start elq, and that is is up to developers how this should be done.
 
     As CSS 3 does not support custom at-rules/selectors, responsive elements are annotated in HTML by element attributes.
@@ -515,7 +515,7 @@
   \end{itemize}
 
   \subsection{Example Plugin Implementation}
-    The \code{elq-breakpoints} API that enables developers to annotate breakpoints in HTML, as described in section~\ref{}, is implemented as two plugins.
+    The \code{elq-breakpoints} API that enables developers to annotate breakpoints in HTML, as described in Section~\ref{sec:elq-api}, is implemented as two plugins.
     This shows that even the core functionality of \elq{} is implemented in terms of plugins.
     The first plugin parses the breakpoints of the element attributes.
     The second plugin applies the breakpoint states as classes.
@@ -609,7 +609,7 @@
       elements.forEach(elq.activate);
     \end{lstlisting}
   
-  \subsection{Element Resize Detection}
+  \subsection{Element Resize Detection}\label{sec:imp_erd}
     Unfortunately, there is no standardized resize event for arbitrary elements \cite{w3c_dom2_events}.
     Only documents emit resize events in modern browsers and therefore such events can only be observed for frame elements (since a frame \gls{element} has its own \gls{document}).
     According to the general use case described in Section~\ref{sec:eq-definitions}, a valid limitation is to only support \gls{element} resize detection for non-void elements (i.e., elements that may contain content).
@@ -622,7 +622,6 @@
     The problem is that each poll would force the layout queue to be flushed since the computed style of elements needs to be retrieved in order to know if elements have resized or not.
     Since the polling is performed all the time the overall page performance is decreased even if the page is idle, which is undesired especially for devices running on battery.
     % \todo{Should make quick test to see how much CPU it uses when polling frequently}
-
 
     % AHA! So we have actually improved an algorithm that increases the battery-life of mobile devices, which I recall reading about in the mobility track of WWW.    
 
@@ -639,7 +638,7 @@
       \item\label{itm:erd-algo-original-object-1} Get the computed style of $e$.
       \item                                       If the element is positioned (i.e., \code{position} is not \code{static}) the next step is \ref{itm:erd-algo-original-object-4}.
       \item\label{itm:erd-algo-original-object-3} Set the position of $e$ to be \code{relative}. Here additional checks can be performed to warn the developer about unwanted side effects of doing this.
-      \item\label{itm:erd-algo-original-object-4} Create an \code{object} element and attach an event handler for the \code{load} event\footnote{See \url{http://www.w3.org/TR/DOM-Level-3-Events/\#event-type-load} for more information about the load event.}. When the element has been styled and configured properly, it is injected into~$e$.
+      \item\label{itm:erd-algo-original-object-4} Create an \code{object} element and attach an event handler for the \code{load} event. When the element has been styled and configured properly, it is injected into~$e$.
       \item                                       The algorithm waits for the \code{load} event handler to be called by the \gls{layout engine}. When the handler is called, a \code{resize} event handler is attached to the \gls{document} of the \code{object} \gls{element}.
     \end{enumerate}
 
@@ -686,17 +685,16 @@
     Even if some layout engines are unable to queue the repositing of scrollbars, it is still beneficial to batch process the algorithm since only pure layouts need to be performed (instead of having to recompute styles and synchronize the \gls{DOM} and \glspl{render tree} before each layout).
     As step~\ref{itm:erd-algo-original-scroll-6} is performed by the \gls{layout engine} asynchronously and does not interact with the \gls{DOM}, it does not need to be batch processed.
 
+    TODO: Write about issues that has also been resolved, such as 0-size bug and scroll-sizes?
+
 \section{Empirical evaluation}
   \subsection{Performance}
-    The following tests were performed on a computer with a 2.5 GHz processor and 16 GB of memory\footnote{The serial number of the computer is C02N4G9TG3QD and the vendor is Apple Inc. CPU: 2.5 GHz Intel Core i7. Memory: 16 GB 1600 MHz DDR3. GPU: Intel Iris Pro 1536 MB.}.
-    The library has been tested in the following browsers: Chrome 42.0.2311.152, Firefox 37.0.1 and Safari 8.0.6.
-    Measurements and graphs show evaluations performed in Chrome unless stated otherwise.
+    Only the performance of the element resize detection system has been performed.
+    The reason for this is that this system entails the significant performance penalties of the library.
+    Also, it is hard to compare performance results of related libraries since the functionality is so different.
+    Luckily, element resize detection is the common denomitor of all automatic libraries and the results of this system can easily be compared.
 
-    % Have this here?
-    % Since the algorithm neither interacts with the \gls{DOM}, handles any large data structures, or performs any heavy computations it is very fast.
-    % It takes \textasciitilde0.02 ms to execute the \code{isUpdateCyclic} function.
-    % \todo{Should this measurement be given in eval? But then eval will be really small?}
-    % See figure~\ref{} for a timeline of the \code{elq-breakpoints} plugin handling a resize event, where it is visually shown how insignificant the impact of the cycle detector system has on the total performance.
+    Measurements and graphs show evaluations performed in Chrome 42 unless stated otherwise.
 
     % \todo[inline]{Include evaluation about the cycle detector?}
     % \todo[inline]{Write about the new "noclasses" option, and maybe flesh out the interplugin API section?}
@@ -708,112 +706,20 @@
 
     
     %\subsection{Element resizing detection}\label{sec:eval-perf-erd}
-      This section evaluates the performance of the object-based and scroll-based solutions to detecting \gls{element} resize events described in Section~\ref{sec:imp_erd}.
-      The optimized \gls{ELQ} version of the scroll-based solution is also evaluated.
-      Since the element resizing detection subsystem performs the heaviest tasks, only the performance of that subsystem is evaluated.
-      The other subsystems entail no significant performance penalties.
       % \todo{Remove this, and analyze the different subsystems in detail: erd, cycle detector, elq-breakpoints, etc.}
 
-      The object-based solution performs well when detecting resize events.
-      However, injecting \code{object} elements is quite a heavy task.
-      See figure~\ref{fig:erd-original-object} for graphs that show the performance of the object-based solution.
-      As shown by the graphs, the injection can be performed with adequate performance as long as the number of elements is low.
-      The solution does not scale well as the number of elements increases.
-      % \todo{Maybe be less pessimistic as Safari might have to use the object solution?}
-      \begin{figure*}[h]
-        \tiny
-        \begin{center}
-          \begin{minipage}[t]{.5\textwidth}
-            \vspace{0pt}
-            \centering
-              \begin{tikzpicture}
-                \begin{axis}[
-                    width=\textwidth, % Scale the plot to \linewidth
-                    grid=major, % Display a grid
-                    grid style={dashed,gray!30}, % Set the style
-                    xlabel=Number of elements, % Set the labels
-                    ylabel=Injection time,
-                    y unit=s, % Set the respective units
-                    legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
-                  ]
-                  \addplot+[red, mark options={red}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-object-original.csv};
-                  \legend{Object-based solution}
-                \end{axis}
-              \end{tikzpicture}
-          \end{minipage}%
-          \begin{minipage}[t]{.5\textwidth}
-            \vspace{0pt}
-            \centering
-            \begin{tikzpicture}
-              \begin{axis}[
-                  width=\textwidth, % Scale the plot to \linewidth
-                  grid=major, % Display a grid
-                  grid style={dashed,gray!30}, % Set the style
-                  xlabel=Number of elements, % Set the labels
-                  ylabel=Heap memory usage,
-                  y unit=MB, % Set the respective units
-                  legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
-                ]
-                \addplot+[red, mark options={red}]
-                % add a plot from table; you select the columns by using the actual name in
-                % the .csv file (on top)
-                table[x=n elements,y=memory,col sep=comma] {./data/erd-object-original.csv};
-                \legend{Object-based solution}
-              \end{axis}
-            \end{tikzpicture}
-          \end{minipage}
-        \caption{The injection performance of the object-based solution. The left graph shows the injection time. The right graph shows the heap memory used when all \code{object} elements have been injected.}
-        \label{fig:erd-original-object}
-        \end{center}
-      \end{figure*}
+    The object-based approach (as presented by \cite{backalley}) performs well when detecting resize events, which it does with a delay of 30 ms for 100 elements.
+    However, the injection performance is not great as presented in figure~\ref{fig:erd-original-object}.
+    As shown by the graphs, the injection can be performed with adequate performance as long as the number of elements is low.
+    The approach does not scale well as the number of elements increases.
+    This is probably due to that the heap memory usage grows roughly by 0.55 MB per element.
 
-      % See figure~\ref{fig:erd-elq-scroll} for graphs that show how the \gls{ELQ} scroll-based solution performs compared to the other solutions.
-      % As evident in the figure, the optimized \gls{ELQ} solution has significantly reduced installation times compared to the other two.
-      % The \gls{ELQ} solution also scales better, as more clearly shown in figure~\ref{fig:erd-solutions-regressed} that includes polynomial regression graphs for all three solutions.
-      % Both scroll-based solutions have the same memory footprint (i.e., too low for reliable measurements).
-
-      The scroll-based solution also performs well when detecting resize events.
-      As no \code{object} elements are injected the memory footprint is reduced significantly, which improves the injection performance.
-      See figure~\ref{fig:erd-original-scroll} for graphs that show how both solutions perform compared to each other.
-      It is clear that the scroll-based solution both performs and scales better than the object-based solution during injection.        
-      The amount of memory used by the scroll-based solution is so low that reliable measurements could not be gathered, as the number of elements was not high enough to affect the memory usage noticeably.
-
-      Recall that the scroll-based solution was rewritten and optimized, which is referred to as the \gls{ELQ} scroll-based solution.
-      By avoiding \gls{layout thrashing}, the injection performance was improved significantly.
-      See figure~\ref{fig:erd-elq-scroll} for graphs that show how it performs compared to the other solutions.
-      As evident in the figure, the optimized \gls{ELQ} solution has significantly reduced injection times compared to the other two.
-      It achieves a 32-fold speedup compared to the object-based solution and a 13-fold speedup compared to the scroll-based solution when preparing 500 elements for resize detection.
-      The \gls{ELQ} solution also scales better, as more clearly shown in figure~\ref{fig:erd-solutions-regressed} that includes polynomial regression graphs for all three solutions.
-      Both scroll-based solutions have the same memory footprint (i.e., too low for reliable measurements).
-      \begin{figure*}[h]
-        \tiny
-        \begin{center}
-          \begin{minipage}[t]{.5\textwidth}
-            \vspace{0pt}
-            \centering
-              \begin{tikzpicture}
-                \begin{axis}[
-                    yticklabel style={
-                            /pgf/number format/fixed,
-                            /pgf/number format/precision=5
-                    },
-                    scaled y ticks=false,
-                    width=\textwidth, % Scale the plot to \linewidth
-                    grid=major, % Display a grid
-                    grid style={dashed,gray!30}, % Set the style
-                    xlabel=Number of elements, % Set the labels
-                    ylabel=Injection time,
-                    y unit=s, % Set the respective units
-                    legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
-                  ]
-                  \addplot+[blue, mark=diamond*, mark options={blue}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-elq.csv};
-                  \addlegendentry{ELQ scroll-based solution}
-                \end{axis}
-              \end{tikzpicture}
-          \end{minipage}%
-          \begin{minipage}[t]{.5\textwidth}
-            \vspace{0pt}
-            \centering
+    \begin{figure}[h]
+      \tiny
+      \begin{center}
+        \begin{minipage}[t]{.35\textwidth}
+          \vspace{0pt}
+          \centering
             \begin{tikzpicture}
               \begin{axis}[
                   width=\textwidth, % Scale the plot to \linewidth
@@ -825,27 +731,100 @@
                   legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
                 ]
                 \addplot+[red, mark options={red}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-object-original.csv};
-                \addplot+[orange, mark options={orange}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-original.csv};
-                \addplot+[blue, mark=diamond*, mark options={blue}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-elq.csv};
+                \legend{Object-based approach}
+              \end{axis}
+            \end{tikzpicture}
+        \end{minipage}%
+        % \begin{minipage}[t]{.5\textwidth}
+        %   \vspace{0pt}
+        %   \centering
+        %   \begin{tikzpicture}
+        %     \begin{axis}[
+        %         width=\textwidth, % Scale the plot to \linewidth
+        %         grid=major, % Display a grid
+        %         grid style={dashed,gray!30}, % Set the style
+        %         xlabel=Number of elements, % Set the labels
+        %         ylabel=Heap memory usage,
+        %         y unit=MB, % Set the respective units
+        %         legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
+        %       ]
+        %       \addplot+[red, mark options={red}]
+        %       % add a plot from table; you select the columns by using the actual name in
+        %       % the .csv file (on top)
+        %       table[x=n elements,y=memory,col sep=comma] {./data/erd-object-original.csv};
+        %       \legend{Object-based approach}
+        %     \end{axis}
+        %   \end{tikzpicture}
+        % \end{minipage}
+      % \caption{The injection performance of the object-based approach. The left graph shows the injection time. The right graph shows the heap memory used when all \code{object} elements have been injected.}
+      \caption{The injection performance of the object-based approach.}
+      \label{fig:erd-original-object}
+      \end{center}
+    \end{figure}
 
-                \addlegendentry{Object-based solution}
-                \addlegendentry{Scroll-based solution}
+    % See figure~\ref{fig:erd-elq-scroll} for graphs that show how the \elq{} scroll-based solution performs compared to the other solutions.
+    % As evident in the figure, the optimized \elq{} solution has significantly reduced installation times compared to the other two.
+    % The \elq{} solution also scales better, as more clearly shown in figure~\ref{fig:erd-solutions-regressed} that includes polynomial regression graphs for all three solutions.
+    % Both scroll-based solutions have the same memory footprint (i.e., too low for reliable measurements).
+
+    As the scroll-based approach (as presented by \cite{backalley}) does not inject \code{object} elements the memory footprint is reduced significantly, which improves the injection performance.
+    The amount of memory used is so low that reliable measurements could not be gathered.
+    Recall from Section~\ref{sec:imp_erd} that the scroll-based approach was heavily optimized for \elq{}, which is referred to as the \elq{} scroll-based approach.
+    See figure~\ref{fig:erd-elq-scroll} for graphs that show how the \elq{} scroll-based approach performs compared to the other two approaches.
+    As evident in the figure, the optimized \elq{} approach has significantly reduced injection times.
+    It achieves a 37-fold speedup compared to the object-based approach and a 17-fold speedup compared to the scroll-based approach when preparing 700 elements for resize detection.
+
+    \begin{figure*}[h!]
+      \tiny
+      \begin{center}
+        \begin{minipage}[t]{.5\textwidth}
+          \vspace{0pt}
+          \centering
+            \begin{tikzpicture}
+              \begin{axis}[
+                  yticklabel style={
+                          /pgf/number format/fixed,
+                          /pgf/number format/precision=5
+                  },
+                  scaled y ticks=false,
+                  width=\textwidth, % Scale the plot to \linewidth
+                  grid=major, % Display a grid
+                  grid style={dashed,gray!30}, % Set the style
+                  xlabel=Number of elements, % Set the labels
+                  ylabel=Injection time,
+                  y unit=s, % Set the respective units
+                  legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
+                ]
+                \addplot+[blue, mark=diamond*, mark options={blue}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-elq.csv};
                 \addlegendentry{ELQ scroll-based solution}
               \end{axis}
             \end{tikzpicture}
-          \end{minipage}
-        \caption{The injection performance of the optimized \gls{ELQ} scroll-based element resizing detection solution. The left graph shows the injection time of the \gls{ELQ} scroll-based solution. The right graph shows all three solutions for comparison. The heap memory usage graph has been omitted as the memory usage of the scroll-based solutions is too low for reliable measurements.}
-        \label{fig:erd-elq-scroll}
-        \end{center}
-      \end{figure*}
-
-      \begin{figure}[h!]
-        \tiny
-        \begin{center}
+        \end{minipage}%
+        \begin{minipage}[t]{.5\textwidth}
+          \vspace{0pt}
           \centering
+          % \begin{tikzpicture}
+          %   \begin{axis}[
+          %       width=\textwidth, % Scale the plot to \linewidth
+          %       grid=major, % Display a grid
+          %       grid style={dashed,gray!30}, % Set the style
+          %       xlabel=Number of elements, % Set the labels
+          %       ylabel=Injection time,
+          %       y unit=s, % Set the respective units
+          %       legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
+          %     ]
+          %     \addplot+[red, mark options={red}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-object-original.csv};
+          %     \addplot+[orange, mark options={orange}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-original.csv};
+          %     \addplot+[blue, mark=diamond*, mark options={blue}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-elq.csv};
+
+          %     \addlegendentry{Object-based solution}
+          %     \addlegendentry{Scroll-based solution}
+          %     \addlegendentry{ELQ scroll-based solution}
+          %   \end{axis}
+          % \end{tikzpicture}
           \begin{tikzpicture}
             \begin{axis}[
-                width=0.5\textwidth, % Scale the plot to \linewidth
+                width=\textwidth, % Scale the plot to \linewidth
                 grid=major, % Display a grid
                 grid style={dashed,gray!30}, % Set the style
                 xlabel=Number of elements, % Set the labels
@@ -864,40 +843,75 @@
               \addlegendentry{ELQ scroll-based solution}
             \end{axis}
           \end{tikzpicture}
-        \caption{The injection performance of all three solutions including graph predictions by polynomial regression.}
-        \label{fig:erd-solutions-regressed}
-        \end{center}
-      \end{figure}
+        \end{minipage}
+      \caption{The left graph shows the injection time of the \elq{} scroll-based approach. The right graph shows all three approaches, including graph predictions by polynomial regression.}
+      \label{fig:erd-elq-scroll}
+      \end{center}
+    \end{figure*}
 
-      \paragraph{Firefox and Safari}
-      As shown, great performance can be achieved with the optimized \gls{ELQ} scroll-based solution in Chrome.
-      Unfortunately, there is no silver bullet to observing element resize events; as the other \glspl{browser} behave differently.
-      See table~\ref{table:erd-layout-engines} for the performance of the object-based and scroll-based solutions operating on 100 elements in different \glspl{browser}.
-      The \gls{ELQ} scroll-based solution is preferred for Chrome, as the injection is 32-fold faster (when operating on 500 elements) than the object-based solution while the resize detection performance is the same for both solutions.
-      In Firefox, the object-based solution detects resize events 2-fold faster than the \gls{ELQ} scroll-based solution when operating on 100 elements (still, 100 ms for detecting resize events is acceptable).
-      However, the injection time needed for the object-based solution is 5.5-fold of the time needed for the \gls{ELQ} scroll-based solution.
-      The \gls{ELQ} scroll-based solution is therefore probably desired in Firefox for the general use case (as described in Section~\ref{sec:eq-definitions}).
-      In Safari, the \gls{ELQ} scroll-based solution detects resize events in 800 ms while the object-based solution detects them in 25 ms, which of course is unacceptable.
-      Unfortunately, the injection time needed for the object-based solution is 3-fold slower than the \gls{ELQ} scroll-based solution.
-      Since a delay of 800 ms when detecting resize events is undesired in most use cases, the object-based solution is preferred for Safari.
-      Recall from Section~\ref{sec:imp_erd} that this is due to WebKit and Gecko not being able to queue the scroll mutation operations as Blink does.
-      \begin{table}[ht]\center
-        \tiny
-        \begin{tabular}[t]{ l l l l l l l }
-          \multirow{2}{*}{Layout engine} & \multicolumn{2}{c}{Injection} & \multicolumn{2}{c}{Resize detection} \\
-          & scroll & object & scroll & object \\
-          \hline
-          \gls{Blink}   & \textbf{30 ms}   & 600 ms    & 30 ms   & 30 ms           \\
-          \gls{Gecko}   & \textbf{200 ms}  & 1100 ms   & 100 ms  & \textbf{50 ms}  \\
-          \gls{WebKit}  & \textbf{100 ms}  & 300 ms    & 800 ms  & \textbf{25 ms}  \\
-        \end{tabular}
-        \caption{Performance of the object-based and \gls{ELQ} scroll-based solutions in different \glspl{layout engine} when operating on 100 elements.}
-        \label{table:erd-layout-engines}
-      \end{table}
+    % \begin{figure}[h!]
+    %   \tiny
+    %   \begin{center}
+    %     \centering
+    %     \begin{tikzpicture}
+    %       \begin{axis}[
+    %           width=0.5\textwidth, % Scale the plot to \linewidth
+    %           grid=major, % Display a grid
+    %           grid style={dashed,gray!30}, % Set the style
+    %           xlabel=Number of elements, % Set the labels
+    %           ylabel=Injection time,
+    %           y unit=s, % Set the respective units
+    %           legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
+    %         ]
+    %         \addplot+[red, mark options={red}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-object-original.csv};
+    %         \addplot+[orange, mark options={orange}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-original.csv};
+    %         \addplot+[blue, mark options={blue}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-elq.csv};
+    %         \addplot[dashed,red,domain=1:1500,samples=100] {5.567042796*10^(-6)*x^2 + 4.680174396*10^(-3)*x + 6.495754669*10^(-3)};
+    %         \addplot[dashed,orange,domain=1:1500,samples=100] {4.533208873*10^(-6)*x^2 + 6.320377596*10^(-4)*x + 2.289566005*10^(-2)};
+    %         \addplot[dashed,blue,domain=1:1500,samples=100] {4.071740702*10^(-8)*x^2 + 1.823749404*10^(-4)*x + 1.527042267*10^(-2)};
+    %         \addlegendentry{Original object-based solution}
+    %         \addlegendentry{Scroll-based solution}
+    %         \addlegendentry{ELQ scroll-based solution}
+    %       \end{axis}
+    %     \end{tikzpicture}
+    %   \caption{The injection performance of all three solutions including graph predictions by polynomial regression.}
+    %   \label{fig:erd-solutions-regressed}
+    %   \end{center}
+    % \end{figure}
 
-      % \todo[inline]{Present perf statistics of other browsers? Firefox still seems to favor the scroll solution (but less performant) while Safari semms to favors the object solution.}
-      % \todo[inline]{Show graph for resize detection also.}
-      % \todo[inline]{Graphs for Firefox, IE and Safari?}
+    TODO: Write about other browsers? Safari 9 and Chrome seem to have similar results. IE and FireFox and legacy version of Safari. Write that \elq{} will at worst be as slow as the other ones (since it uses the object-based approach as a fallback).
+
+    TODO: Write about resize detection for all approaches?
+
+    % \paragraph{Firefox and Safari}
+    % As shown, great performance can be achieved with the optimized \elq{} scroll-based solution in Chrome.
+    % Unfortunately, there is no silver bullet to observing element resize events; as the other \glspl{browser} behave differently.
+    % See table~\ref{table:erd-layout-engines} for the performance of the object-based and scroll-based solutions operating on 100 elements in different \glspl{browser}.
+    % The \elq{} scroll-based solution is preferred for Chrome, as the injection is 32-fold faster (when operating on 500 elements) than the object-based solution while the resize detection performance is the same for both solutions.
+    % In Firefox, the object-based solution detects resize events 2-fold faster than the \elq{} scroll-based solution when operating on 100 elements (still, 100 ms for detecting resize events is acceptable).
+    % However, the injection time needed for the object-based solution is 5.5-fold of the time needed for the \elq{} scroll-based solution.
+    % The \elq{} scroll-based solution is therefore probably desired in Firefox for the general use case (as described in Section~\ref{sec:eq-definitions}).
+    % In Safari, the \elq{} scroll-based solution detects resize events in 800 ms while the object-based solution detects them in 25 ms, which of course is unacceptable.
+    % Unfortunately, the injection time needed for the object-based solution is 3-fold slower than the \elq{} scroll-based solution.
+    % Since a delay of 800 ms when detecting resize events is undesired in most use cases, the object-based solution is preferred for Safari.
+    % Recall from Section~\ref{sec:imp_erd} that this is due to WebKit and Gecko not being able to queue the scroll mutation operations as Blink does.
+    % \begin{table}[ht]\center
+    %   \tiny
+    %   \begin{tabular}[t]{ l l l l l l l }
+    %     \multirow{2}{*}{Layout engine} & \multicolumn{2}{c}{Injection} & \multicolumn{2}{c}{Resize detection} \\
+    %     & scroll & object & scroll & object \\
+    %     \hline
+    %     \gls{Blink}   & \textbf{30 ms}   & 600 ms    & 30 ms   & 30 ms           \\
+    %     \gls{Gecko}   & \textbf{200 ms}  & 1100 ms   & 100 ms  & \textbf{50 ms}  \\
+    %     \gls{WebKit}  & \textbf{100 ms}  & 300 ms    & 800 ms  & \textbf{25 ms}  \\
+    %   \end{tabular}
+    %   \caption{Performance of the object-based and \elq{} scroll-based solutions in different \glspl{layout engine} when operating on 100 elements.}
+    %   \label{table:erd-layout-engines}
+    % \end{table}
+
+    % \todo[inline]{Present perf statistics of other browsers? Firefox still seems to favor the scroll solution (but less performant) while Safari semms to favors the object solution.}
+    % \todo[inline]{Show graph for resize detection also.}
+    % \todo[inline]{Graphs for Firefox, IE and Safari?}
   \subsection{Case studies}
     Plugins makes it easy to integrate.
 
@@ -910,33 +924,17 @@
   \end{itemize}
 
   \subsection{Limitations}
-    (Drawbacks)
-    No good alternative.
-    Mention RICG (perhaps standard that solves the issue in the future).
+    Inherent to all current implementations of element queries is that the conditional style is applied ``one layout behind''.
+    Since a layout pass needs to have been performed in order for an element to change size, the conditional styles defined by the elemnet queries cannot be applied until next layout.
+    Therefore, the element will be display invalid design until another layout has been performed.
+    The flash of invalid design is usually so that users do not notice it, but in some cases developers need to work around the issue to avoid more apparent results.
 
-    % All three solutions mutate the \gls{DOM} and rely on special \gls{element} behavior, but they offer many advantages over polling.
-    % Since they are event based, \glspl{layout engine} only need to perform extra work when injecting the elements to the target elements and when the target elements actually resize.
-    % Event-based resize detection also implies minimal delay between the actual resize event and the detection.
-    % By positioning the injected elements \code{absolute} with widths and heights set to \code{100\%} and the \code{visibility} set to \code{hidden}, the injected elements do not affect the visual representation of the \gls{document}.
-    % However, injecting elements into target elements has some implications:
-    % \begin{itemize}
-    %   \item \textbf{\gls{CSS} selectors may break}:
-    %     Since target elements get an extra child, \gls{CSS} selectors may behave differently.
-    %     For instance, the selector \code{\#target~*} also matches the injected elements, which may result in them being styled in an undesired way.
-    %     Especially the scroll-based solution is sensitive to unintentional styles being applied, as the injected elements are finely styled and tuned in order to behave as desired.
-    %     Additionally, selectors such as \code{:first-child} and \code{:last-child} may not behave as expected.
-    %   \item \textbf{\gls{JavaScript} may break}:
-    %     Similar to with \gls{CSS} selectors, \gls{JavaScript} \gls{DOM} selectors may break.
-    %     The first node (or last) of the target \gls{element} may not be what developers expect it to be as the target element has an extra child.
-    %     Also, code that alter the content of a target \gls{element} (such as \code{element.InnerHTML = ...}) may undesirably remove the injected \gls{element}.
-    %   \item \textbf{The target \gls{element} must be positioned}:
-    %     Absolute positioned elements cannot be styled relative to \code{static} positioned elements and are therefore moved up to the first non-static positioned ancestor in the render tree \cite{w3c_visuren}.
-    %     Since the injected element must be a child of the target \gls{element} (and not moved upwards in the render tree), the target \gls{element} cannot be positioned \code{static} (i.e., the default positioning for many elements).
-    %     Fortunately, elements positioned \code{relative} behave exactly like \code{static}, given they do not have any styles applicable to relative elements (such as \code{top} or \code{bottom}).
-    %     Since the style properties that depend on the \gls{element} being \code{relative} positioned do not affect the \gls{element} if it is positioned \code{static}, the properties can be removed or regarded as developer errors.
-    %     This way target elements can be positioned \code{relative} with the special style properties removed, to obtain the same visual representation as being positioned \code{static}.
-    % \end{itemize}
+    Another caveat is presented by the element resize detection approaches, as they mutate the DOM.
+    Developers need to be aware of this as CSS selectors and JavaScript may also match the injected elements.
+    This is easily avoided by good practices.
 
+    It should be noted that all limitations described only affects the elements that uses the element queries functionality.
+    \elq{} does not impose potential problems to other parts of the DOM other than where applied explicitly.
 
   \subsection{Standardization}
     It is stated on the W3C's www-style mailing list \cite{w3c_eq_mail} by Zbarsky of Mozilla, Atkins of Google and Sprehn of Google that element queries are infeasible to implement without restricting them.
@@ -948,7 +946,10 @@
    
     In the future, we hope that Elq may use the aiding sub-standards pushed by RICG, to achieve greater flexibility and performance.
 
-    We want RICG to standardize the following: bla bla bla
+    We hope that the supportings standards of element queries discussed by RICG come soon so that some of the limitations may be resolved.
+    A standardized resize event would enable us to reduce the caveats of injected elements, and reduce the code base of \elq{} significantly.
+    Support for custom at-rules/selectors would also enable us to define a more natural API in CSS.
+    Being able to tell elements to ignore children while computing the size would also reduce the need of the cycle detection algorithm.
 
 \section{Related Work}
   
@@ -958,6 +959,9 @@
     \item Production ready.
     \item Probably no standard (or not in a long time).
   \end{itemize}
+
+  We are confident that \elq{} is a good canditate for solving the problem of modular RWD.
+  We hope for supporting standards by RICG to improve \elq{}, until standardized element queries come in the far future.
 
 %\end{document}  % This is where a 'short' article might terminate
 
