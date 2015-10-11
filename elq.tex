@@ -36,13 +36,13 @@
 \usepackage{multirow}
 \usepackage{url}
 \usepackage{listings}
+\usepackage{placeins}
 \lstset{
   basicstyle=\scriptsize,
 }
 
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\elq}{ELQ}
-\newcommand{\glspl}[1]{#1}
 \newcommand{\gls}[1]{#1}
 
 \begin{document}
@@ -673,7 +673,7 @@
       \item\label{itm:erd-algo-scroll-level-2}
         \textbf{The mutation level:}
         Steps \ref{itm:erd-algo-original-scroll-2}, \ref{itm:erd-algo-original-scroll-3} and \ref{itm:erd-algo-original-scroll-4} are performed, which mutate the \gls{DOM}.
-        All mutations performed in this level can be queued by \glspl{layout engine}.
+        All mutations performed in this level can be queued by layout engines.
       \item\label{itm:erd-algo-scroll-level-3}
         \textbf{The forced layout level:}
         % \todo{Grammar?}
@@ -682,7 +682,7 @@
 
     Since repositioning a scrollbar in some layout engines forces a layout, such operations need to be performed after that all other queueable operations have been executed.
     Therefore, step~\ref{itm:erd-algo-original-scroll-5} is performed in level~\ref{itm:erd-algo-scroll-level-3} as the last step.
-    Even if some layout engines are unable to queue the repositing of scrollbars, it is still beneficial to batch process the algorithm since only pure layouts need to be performed (instead of having to recompute styles and synchronize the \gls{DOM} and \glspl{render tree} before each layout).
+    Even if some layout engines are unable to queue the repositing of scrollbars, it is still beneficial to batch process the algorithm since only pure layouts need to be performed (instead of having to recompute styles and synchronize the \gls{DOM} and render trees before each layout).
     As step~\ref{itm:erd-algo-original-scroll-6} is performed by the \gls{layout engine} asynchronously and does not interact with the \gls{DOM}, it does not need to be batch processed.
 
     TODO: Write about issues that has also been resolved, such as 0-size bug and scroll-sizes?
@@ -762,19 +762,12 @@
       \end{center}
     \end{figure}
 
-    % See figure~\ref{fig:erd-elq-scroll} for graphs that show how the \elq{} scroll-based solution performs compared to the other solutions.
+    % See figure~\ref{fig:erd-elq-scroll} for graphs that show how the \elq{} scroll-based solution performs compared to the other approaches.
     % As evident in the figure, the optimized \elq{} solution has significantly reduced installation times compared to the other two.
-    % The \elq{} solution also scales better, as more clearly shown in figure~\ref{fig:erd-solutions-regressed} that includes polynomial regression graphs for all three solutions.
-    % Both scroll-based solutions have the same memory footprint (i.e., too low for reliable measurements).
+    % The \elq{} solution also scales better, as more clearly shown in figure~\ref{fig:erd-approaches-regressed} that includes polynomial regression graphs for all three approaches.
+    % Both scroll-based approaches have the same memory footprint (i.e., too low for reliable measurements).
 
-    As the scroll-based approach (as presented by \cite{backalley}) does not inject \code{object} elements the memory footprint is reduced significantly, which improves the injection performance.
-    The amount of memory used is so low that reliable measurements could not be gathered.
-    Recall from Section~\ref{sec:imp_erd} that the scroll-based approach was heavily optimized for \elq{}, which is referred to as the \elq{} scroll-based approach.
-    See figure~\ref{fig:erd-elq-scroll} for graphs that show how the \elq{} scroll-based approach performs compared to the other two approaches.
-    As evident in the figure, the optimized \elq{} approach has significantly reduced injection times.
-    It achieves a 37-fold speedup compared to the object-based approach and a 17-fold speedup compared to the scroll-based approach when preparing 700 elements for resize detection.
-
-    \begin{figure*}[h!]
+    \begin{figure*}[h]
       \tiny
       \begin{center}
         \begin{minipage}[t]{.5\textwidth}
@@ -849,6 +842,16 @@
       \end{center}
     \end{figure*}
 
+    As the scroll-based approach (as presented by \cite{backalley}) does not inject \code{object} elements the memory footprint is reduced significantly, which improves the injection performance.
+    The amount of memory used is so low that reliable measurements could not be gathered.
+    Recall from Section~\ref{sec:imp_erd} that the scroll-based approach was heavily optimized for \elq{}, which is referred to as the \elq{} scroll-based approach.
+    See figure~\ref{fig:erd-elq-scroll} for graphs that show how the \elq{} scroll-based approach performs compared to the other two approaches.
+    As evident in the figure, the optimized \elq{} approach has significantly reduced injection times.
+    It achieves a 37-fold speedup compared to the object-based approach and a 17-fold speedup compared to the scroll-based approach when preparing 700 elements for resize detection.
+
+    
+
+
     % \begin{figure}[h!]
     %   \tiny
     %   \begin{center}
@@ -874,8 +877,8 @@
     %         \addlegendentry{ELQ scroll-based solution}
     %       \end{axis}
     %     \end{tikzpicture}
-    %   \caption{The injection performance of all three solutions including graph predictions by polynomial regression.}
-    %   \label{fig:erd-solutions-regressed}
+    %   \caption{The injection performance of all three approaches including graph predictions by polynomial regression.}
+    %   \label{fig:erd-approaches-regressed}
     %   \end{center}
     % \end{figure}
 
@@ -883,11 +886,13 @@
 
     TODO: Write about resize detection for all approaches?
 
+    TODO: Mention the flow-based solution quickly (as we talk about it in the related works section)
+
     % \paragraph{Firefox and Safari}
     % As shown, great performance can be achieved with the optimized \elq{} scroll-based solution in Chrome.
     % Unfortunately, there is no silver bullet to observing element resize events; as the other \glspl{browser} behave differently.
-    % See table~\ref{table:erd-layout-engines} for the performance of the object-based and scroll-based solutions operating on 100 elements in different \glspl{browser}.
-    % The \elq{} scroll-based solution is preferred for Chrome, as the injection is 32-fold faster (when operating on 500 elements) than the object-based solution while the resize detection performance is the same for both solutions.
+    % See table~\ref{table:erd-layout-engines} for the performance of the object-based and scroll-based approaches operating on 100 elements in different \glspl{browser}.
+    % The \elq{} scroll-based solution is preferred for Chrome, as the injection is 32-fold faster (when operating on 500 elements) than the object-based solution while the resize detection performance is the same for both approaches.
     % In Firefox, the object-based solution detects resize events 2-fold faster than the \elq{} scroll-based solution when operating on 100 elements (still, 100 ms for detecting resize events is acceptable).
     % However, the injection time needed for the object-based solution is 5.5-fold of the time needed for the \elq{} scroll-based solution.
     % The \elq{} scroll-based solution is therefore probably desired in Firefox for the general use case (as described in Section~\ref{sec:eq-definitions}).
@@ -905,7 +910,7 @@
     %     \gls{Gecko}   & \textbf{200 ms}  & 1100 ms   & 100 ms  & \textbf{50 ms}  \\
     %     \gls{WebKit}  & \textbf{100 ms}  & 300 ms    & 800 ms  & \textbf{25 ms}  \\
     %   \end{tabular}
-    %   \caption{Performance of the object-based and \elq{} scroll-based solutions in different \glspl{layout engine} when operating on 100 elements.}
+    %   \caption{Performance of the object-based and \elq{} scroll-based solutions in different layout engines when operating on 100 elements.}
     %   \label{table:erd-layout-engines}
     % \end{table}
 
@@ -952,7 +957,103 @@
     Being able to tell elements to ignore children while computing the size would also reduce the need of the cycle detection algorithm.
 
 \section{Related Work}
+  Since many of related libraries share the same characteristics, they are classified and analyzed in groups.
+  A constraint-based approach is presented individually as it differs significantly from the other approaches.
+  It should be noted that most of the current approaches are combinations of different classes.
+
+  % The related libraries are classified by the following characteristics:
+  % \begin{itemize}
+  %   \item \textbf{Syntax}:  Libraries can either require custom syntax or valid syntax.
+  %                           Custom syntax is considered to be invalid syntax since it does not conform to \gls{web} language standards (custom \gls{CSS} is the most common case).
+  %                           Libraries that do not require custom syntax are considered to have valid syntax.
+  %   \item \textbf{Page type}: All libraries support static pages and some also support dynamic pages.
+  %                             Static pages do not change layout at runtime and therefore no \gls{element} resize detection or element queries library runtime is needed.
+  %                             Dynamic pages may change layout at runtime and therefore need an element queries library runtime with \gls{element} resize detection.
+  %   \item \textbf{Resize detection}:  Libraries need to detect \gls{element} resize events for dynamic layouts and there are three levels of detection support for elements: \gls{viewport} only, non-void elements, and arbitrary elements.
+  %                                     It should be noted that this only reflects the theoretical support of elements; in practice many libraries have issues and bugs that make them unable to detect all \gls{element} resize events.
+  % \end{itemize}
   
+  % \begin{table}[ht]\center
+  %   \tiny
+  %   \begin{tabular}[t]{ l p{3cm} l l l p{3cm} }
+  %     \multicolumn{2}{l}{Implementation} & Syntax & Resize detection & Page type & Comments \\
+  %     \hline
+  %     \cite{eq_imp_magichtml} &             MagicHTML &                                   Invalid &   - &                          Static &    Compiles invalid CSS to valid CSS at server side. \\
+  %     \cite{eq_imp_eqcss} &                 EQCSS &                                       Invalid &   Viewport only &              Dynamic     \\
+  %     \cite{eq_imp_prollyfill-min-width} &  Element Media Queries &                       Invalid &   Non-void elements &   Dynamic &   Flow-based element resizing detection. \\
+  %     \cite{eq_imp_localised-css} &         Localised CSS &                               Invalid &   Arbitrary elements &  Dynamic &   Polling-based element resizing detection. \\
+  %     \cite{eq_imp_gss} &                   Grid Style Sheets 2.0 &                       Invalid &   Arbitrary elements &  Dynamic &   Using the Cassowary constraints solver. \\
+  %     \cite{eq_imp_classquery} &            Class Query &                                 Valid &     - &                          Static &    Writes \gls{media queries} to style on load. \\
+  %     \cite{eq_imp_breakpointsjs} &         breakpoints.js &                              Valid &     Viewport only &              Dynamic &   \\
+  %     \cite{eq_imp_mediaclass} &            MediaClass &                                  Valid &     Viewport only &              Dynamic &   Inline JS syntax. \\
+  %     \cite{eq_imp_elementquery} &          ElementQuery &                                Valid &     Viewport only &              Dynamic &   \\
+  %     \cite{eq_imp_responsive-elements} &   Responsive Elements &                         Valid &     Viewport only &              Dynamic &   \\
+  %     \cite{eq_imp_sickles} &               SickleS &                                     Valid &     Viewport only &              Dynamic &   Parses CSS. \\
+  %     \cite{eq_imp_responsive-elements-2} & Responsive Elements &                         Valid &     Viewport only &              Dynamic &   \\ 
+  %     \cite{eq_imp_breaks2000} &            breaks2000 &                                  Valid &     Viewport only &              Dynamic &   \\
+  %     \cite{eq_imp_eqjs} &                  eq.js &                                       Valid &     Viewport only &              Dynamic &   \\
+  %     \cite{eq_imp_element-queries} &       Element Queries &                             Valid &     Non-void elements &   Dynamic &   Object-based element resizing detection. \\
+  %     \cite{eq_imp_css-element-queries} &   CSS Element Queries &                         Valid &     Non-void elements &   Dynamic &   Scroll-based element resizing detection. \\
+  %     \cite{eq_imp_selector_queries} &      Selector queries and responsive containers &  Valid &     Arbitrary elements &  Dynamic &   Polling-based element resizing detection. \\
+  %   \end{tabular}
+  %   \caption{Classification of related element queries libraries.}
+  %   \label{table:approaches-classifications}
+  % \end{table}
+
+
+  \paragraph{Invalid syntax}
+  The libraries \cite{eq_imp_magichtml,eq_imp_eqcss,eq_imp_prollyfill-min-width,eq_imp_localised-css,eq_imp_gss} have in common that they require developers to write custom (invalid) \gls{CSS}.
+  Since they do not conform to the \gls{CSS} standard, new features can be supported through the custom \gls{CSS} which is parsed in JavaScript.
+  As shown by \cite{eq_imp_eqcss,eq_imp_gss} quite advanced features can be implemented this way.
+  Additionally, adding new \gls{CSS} features implies that it is possible to implement a solution to element queries that does not require any changes to the \gls{HTML}, which may be preferable since all styling then can be written in \gls{CSS}.
+  However, there are numerous drawbacks with libraries that require invalid \gls{CSS}.
+  
+  First, it requires a compilation step in order to produce valid \gls{CSS} that layout engines understand.
+  This can either be done at server side or in the \gls{browser} at runtime.
+  Server-side compilation implies that the layout of the page cannot be changed at runtime and is therefore only useful for static pages, and not enough to satisfy the requirements of reusable responsive modules.
+  By instead having the compilation step at runtime, dynamic layouts can be used since element queries may be re-evaluated on layout changes.
+  However, the performance impact of having the compilation step at runtime can be significant for the following reasons:
+  \begin{itemize}
+    \item The received \gls{CSS} cannot be understood by the \gls{browser}, therefore all parsing and reasoning about it has to be postponed until the library script executes.
+    Note that layout engines could in theory parse the \gls{CSS} and perform speculative selector matching while waiting for other parts of the page to finish (such as executing scripts), which cannot be done with invalid \gls{CSS}.
+    \item When the library script executes it has to parse the custom \gls{CSS} --- a process which is most likely slower than \gls{native} parsing.
+    \item When parsed, the library needs to apply its logic to the parsed \gls{CSS} and produce valid \gls{CSS}. The produced \gls{CSS} needs to be applied to the \gls{document} by mutating the \gls{DOM}.
+    \item The \gls{layout engine} needs to parse the \gls{CSS} added to the \gls{DOM}, which means that the styles of the page is parsed twice.
+    \item The custom parser engine needs to be included in the page, which implies a larger library script size.
+  \end{itemize}
+  
+  Second, by not conforming to \gls{CSS} standards many tools such as preprocessors, validators and linters are not compatible.
+  Also, editors and other code-displaying tools are not able to understand the syntax and are therefore not able to highlight the code properly.
+  It should be noted that it is in some cases possible to create plugins to such tools to extend their capabilities.
+
+  Third, the custom \gls{API} and parser need to be kept up to date with \gls{CSS} standards in order to make sure new features of \gls{CSS} are supported and that they are not conflicting with the custom \gls{API}.
+
+  \paragraph{Resize detection}
+  Most libraries simply observe the \gls{viewport} resize event, which may be enough for static pages but not enough to satisfy the requirements of reusable responsive modules.
+  The libraries \cite{eq_imp_localised-css,eq_imp_selector_queries,eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} have in common that they observe elements for resize events.
+  The libraries \cite{eq_imp_localised-css,eq_imp_selector_queries} use polling to detect element resize.
+
+  The three remaining libraries use three different injection approaches, as described in Section~\ref{sec:imp_erd}, to detect element resize events; \cite{eq_imp_element-queries} uses the object-based solution, \cite{eq_imp_prollyfill-min-width} uses the flow-based solution, and \cite{eq_imp_css-element-queries} uses the scroll-based solution.
+  As shown in the evaluation Section~\ref{sec:eval-performance}, all three approaches have significanly less performance than the element resizing detection system used in \gls{ELQ} for modern browsers.
+  Also, recall from Section~\ref{sec:imp_erd} that the flow-based and scroll-based approaches both have limitations and bugs.
+
+  % TODO: Write about this?
+  % \paragraph{Constraint-based approach}
+  % Shortly after the introduction of \gls{CSS} by the \gls{W3C}, a proposal for \gls{CCSS} was submitted as a more general and flexible alternative to \gls{CSS} \cite{badros1999constraint}.
+  % As the name suggests, the idea of \gls{CCSS} is to layout documents by constraints that would imply a unifying implementation mechanism (i.e., using a constraint solver).
+  % The constraint-based approach provides extended features and reduced complexity compared to \gls{CSS} according to the authors.
+  % The Cassowary\footnote{Cassowary is an incremental constraint solving toolkit that solves systems of linear equalities and inequalities. See \url{http://sourceforge.net/projects/cassowary/} for more information.} constraint solver was used (among other tools) to solve the constraints for the demonstration implementation of \gls{CCSS}.
+  % In 2011, Apple released their Auto Layout\footnote{For more information about Apple's Auto Layout, see \url{https://developer.apple.com/library/ios/documentation/UserExperience/Conceptual/AutolayoutPG/Introduction/Introduction.html}.} technology that uses a similar constraint-based approach.
+  % Apple's implementation also uses the Cassowary algorithms to solve the constraints.
+  % The Grid Style Sheets library \cite{eq_imp_gss} builds upon the ideas of \gls{CCSS} and uses a \gls{JavaScript} port\footnote{See \url{https://github.com/slightlyoff/cassowary.js} for the \gls{JavaScript} port of Cassowary that is used by the Grid Style Sheets library.} of Cassowary to solve the constraints at runtime.
+  % The library also adapted Apple's \gls{VFL} to specify layout constraints.
+  % While not directly offering element queries, the library enables the possibility to conditionally style elements by \gls{element} criteria and thus makes it a good candidate to solve the problem of \gls{responsive} modules.
+  % However, the library has two major issues: performance and browser compatibility \cite{gss_issue}.
+  % One approach to resolve both issues is to precompute the layout in a compilation step at the server.
+  % However, as earlier stated, precompiling styles implies static layouts.
+  % There are other approaches discussed that would increase the performance, but they also limit the dynamism of the page layout.
+  % Additionally, the library evaluates all elements on \gls{DOM} mutations using the \code{MutationObserver} \gls{API}, which does not detect all element resize events as discussed in Section~\ref{sec:imp_erd}.
+
 
 \section{Conclusions}
   \begin{itemize}
