@@ -192,9 +192,8 @@
     With element queries, breakpoints may be defined relative to the font size of the targeted element.
 
     As we can see, even with limited requirements there still are significant flaws with using media queries for responsive modules.
-
-    \label{sec:reqs}
-    \subsection{Requirements}
+    
+    \subsection{Requirements}\label{sec:reqs}
       % \begin{itemize}
       %   \item Parents should decide the layout of their children, and the children should adapt their inner design accordingly.
       %   \item Valid language syntaxes (HTML, CSS, JS).
@@ -207,8 +206,8 @@
 
       \begin{itemize}
         \item 
-          It must provide a possibility for an element to change depending on the properties of the parent element.
-          Elements should automatically respond to changes of the parent size so that the correct design can be presented for each size.
+          %It must provide a possibility for an element to change depending on the properties of the parent element.
+          It must provide a possiblity for an element to automatically respond to changes of its parent's properties so that the correct design can be presented.
         \item
           It must conform to the syntax of HTML, CSS, and JavaScript so that the compatability of tools, libraries and existing projects is retained.
         \item
@@ -226,8 +225,6 @@
       One could argue that a solution does not need to be executed on the client side, but instead generate media queries on the server side for all modules with respect to the current application layout.
       However, this is insufficient due to the modules then being limited to applications with static layouts.
       Also, the generated media queries would not be able to respond to the user changing properties of elements such as layout and font size.
-
-      TODO: Does the last paragraph belong here? Maybe it should be moved to the discussion.
 
     \subsection{Contributions}
       This paper makes the following contributions:
@@ -248,7 +245,6 @@
       \end{itemize}
 
     The rest of the paper is organized as follows:
-    Section~\ref{sec:background} provides some background on CSS media queries and element queries.
     Section~\ref{sec:elq} introduces \elq{} and its API from a user's perspective.
     In Section~\ref{sec:plugins} we introduce \elq{}'s plugin architecture.
     Section~\ref{sec:imp} provides an overview of the main components of \elq{}'s implementation.
@@ -305,7 +301,7 @@
     So for each breakpoint only the min/max part changes.
     It may seem alien that the classes describe that the width of the element is both maximum 300 and 500 pixels.
     This is because we have taken a user-centric approach so that the CSS usage of the classes is similar to the API of media queries.
-    However, developers are free to change this API at will as \elq{} is plugin-based.
+    However, developers are free to change this API by creating plugins.
 
     Now that we have defined the breakpoints of the element, we can conditionally style it in CSS by using the classes as shown in listing~\ref{code:elq-breakpoints-example-css}.
 
@@ -392,9 +388,14 @@
       Since we in the examples given so far have annotated elements breakpoints manually, the power and flexibility of the API have not been properly displayed.
       In the next Section, we'll present an API that combines JavaScript and generated CSS in order to create a high-level API.
 
-    \subsubsection{A high-level Bootstrap-like API}
+    \subsubsection{A grid API}
       To further show the potential of \elq{}, we have created a plugin that enables a high-level API for responsive modules.
       The API enables developers to use responsive grids and utility classes very similar to the ones defined by the CSS Bootstrap framework.
+      
+
+      TODO: Do not show Bootstrap's API. Only present own.
+
+      
       The following is an example grid that uses the Bootstrap API:
 
       \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={code:bootstrap-grid-example}]]
@@ -452,10 +453,8 @@
       TODO: Write about generated CSS?
 
 \section{Extensions via plugins}\label{sec:plugins}
-  One our of contributions is to allow \elq{} to be easily extended with plugins.
   For example, if annotating HTML is undesired it is possible to create a plugin that instead generates element breakpoints by parsing CSS.
   Likewise, if adding breakpoint state classes to elements is undesired it is possible to create a plugin that does something else when an element breakpoint state has changed.
-  In order to enable such powerful behavior alterings by plugins, extensibility has been the main focus when designing the \elq{} architecture.
 
   A plugin is defined by a \emph{plugin definition object} and has the structure shown in listing~\ref{code:elq-plugin-definition}.
   \begin{lstlisting}[gobble=4,caption={The structure of plugin definition objects.},captionpos=b,label={code:elq-plugin-definition}]]
