@@ -395,7 +395,7 @@
 
       TODO: Do not show Bootstrap's API. Only present own.
 
-      
+
       The following is an example grid that uses the Bootstrap API:
 
       \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={code:bootstrap-grid-example}]]
@@ -710,7 +710,7 @@
     Only the performance of the element resize detection system has been performed.
     The reason for this is that this system entails the significant performance penalties of the library.
     Also, it is hard to compare performance results of related libraries since the functionality is so different.
-    Luckily, element resize detection is the common denominator of all automatic libraries and the results of this system can be compared faithfully.
+    Fortunately, element resize detection is the common denominator of all automatic libraries and the results of this system can be compared faithfully.
 
     Measurements and graphs show evaluations performed in Chrome version 42 unless stated otherwise.
 
@@ -938,73 +938,52 @@
     % \todo[inline]{Show graph for resize detection also.}
     % \todo[inline]{Graphs for Firefox, IE and Safari?}
   \subsection{Case studies}
-    Plugins makes it easy to integrate.
+    In this section we aim to provide answers to the following questions:
+    \begin{itemize}
+      \item How can \elq{} be used to modularize existing responsive code bases?
+      \item How much effort is this modularization?
+    \end{itemize}
 
-    The \gls{responsive} parts of \gls{Bootstrap} version 3.3.2 (the grid, containers, \gls{responsive} utility classes, forms, etc.) are built with \gls{media queries}, and therefore only behave as desired when the \gls{Bootstrap} elements can use the full width of the \gls{viewport}.
-    It should be noted that no height breakpoints are being used by \gls{Bootstrap} (as also identified by the general use case in Section~\ref{sec:eq-definitions}).
-    This implies that modules that use any \gls{responsive} \gls{Bootstrap} classes inherently only behave as desired when the module can use the full width of the \gls{viewport}.
-    Such modules force applications to use them in a specific layout and therefore many of the benefits of modules disappear.
-    As an example, the \gls{Bootstrap} \gls{CSS} documentation page was altered to instead offer a two-column documentation.
-    The two-column page presents two instances of the original \gls{CSS} documentation.
-    It is shown in figure~\ref{fig:eval-bootstrap-mq-broken} that the original version of \gls{Bootstrap} (that uses \gls{media queries}) cannot adapt to such layout changes.
+    In order to answer the questions, we have adapted the popular Bootstrap framework\footnote{This evaluation uses Bootstrap version 3.3.2.} to use element queries instead of media queries.
+    According to its website, ``Bootstrap is the most popular HTML, CSS, and JS framework for developing responsive, mobile first projects on the web.''~\cite{bootstrap}
    
-    In order to make \gls{Bootstrap} behave as desired in any layouts the \gls{responsive} parts of the framework were modified to use element queries instead of \gls{media queries} by using \gls{ELQ}.
-    Two \gls{Bootstrap} classes have been chosen to be treated as sub-viewports that are \code{elq-breakpoints} elements: \code{container} and \code{container-fluid}.
-    %\todo{Not happy with calling containers as \glspl{viewport}}
+    In order to modularize Bootstrap, we redefine the behavior of its responsive elements so that they no longer respond to the viewport but to enclosing container elements.
+    The following observation guides our modularization: all responsive elements should respond to their closest enclosing \code{container} or \code{container-fluid} element.
     Both classes are used in \gls{Bootstrap} to define new parts of a page (e.g., a grid is required to have a container ancestor).
-    They are also nestable, which makes them suitable to be used as sub-viewports.
-    %\todo{Not happy with calling containers for \glspl{viewport}. should come up with something better.}
-    The \code{container} class centers content with fixed widths by different \gls{viewport} sizes, and the \code{container-fluid} uses the full available width.
-    The idea is to have all \gls{responsive} classes conditionally styled with element queries by the size of the nearest ancestor container \gls{element}.
-    This implies that all elements with \gls{responsive} classes are converted to \code{elq-mirror} elements since they need to mirror the breakpoints of the nearest ancestor \code{elq-breakpoints} element (i.e., a container \gls{element}).
-    Since container elements may be nested, \code{container} elements are both \code{elq-mirror} and \code{elq-breakpoints} elements (because \code{container} elements also conditionally style themselves, as opposed to \code{container-fluid} elements).
-    Recall from section~\ref{sec:plugin-mirror} that it is beneficial for \gls{responsive} elements to be \code{elq-mirror} elements in order to not limit the element usage to a specific \gls{HTML} structure.
+    They are also nestable, which is important to satisfy the requirement of composable modules.
+    The breakpoints of the container elements are defined using the \code{elq-breakpoints} API (see Section~\ref{sec:elq-api}).
+    Since the Bootstrap API uses a predefined set of breakpoints, they are all added to the container elements.
 
-    \paragraph{Altering the style code}
-    \gls{Bootstrap} mainly uses three width numbers for \gls{responsive} breakpoints: 768, 970 and 1170 pixels.
-    Since the \gls{Bootstrap} \gls{CSS} is generated by the \gls{LESS} preprocessor, they are defined as constants as presented in listing~\ref{code:bootstrap-less-breakpoints}.
-    \begin{lstlisting}[gobble=8,label={code:bootstrap-less-breakpoints},caption={The main breakpoints used by \gls{Bootstrap} defined as \gls{LESS} constants.},captionpos=b]]
-      /* File "less/variables.less" of Bootstrap. */
+    According to this design, we convert all responsive elements of Bootstrap to \code{elq-mirror} elements, since they need to mirror the breakpoints of the nearest ancestor \code{elq-breakpoints} element.
+    Since container elements may be nested, they have both the \code{elq-breakpoints} and \code{elq-mirror} behavior.
+
+    The breakpoints of Bootstrap are defined as the following constants:\footnote{The Bootstrap CSS is generated using the LESS preprocessor~\cite{} whose syntax we use.}
+    \begin{lstlisting}[gobble=6,label={code:bootstrap-less-breakpoints},caption={},captionpos=b]]
       @screen-sm-min: 480px;
       @screen-md-min: 992px;
       @screen-lg-min: 1200px;
     \end{lstlisting}
-    Notice that the numbers also include the \code{px} postfix.
-    Recall from Section~\ref{sec:plugin-breakpoints} that the breakpoint classes added by the \code{elq-breakpoints} plugin do not include the \code{px} postfix by default (i.e., if an element is above 480 pixels the class would be \code{elq-width-above-480} and not \code{elq-width-above-480px}).
-    Fortunately, the \code{elq-breakpoints} plugin may be configured to append a postfix to the breakpoint classes by the \code{postfix} option.
-    By configuring the plugin to use \code{px} as postfix, the constants can be used seamlessly in element queries.
+
+
+
     As shown in listing~\ref{code:bootstrap-less-breakpoints-usage}, \gls{media queries} are easily replaced by element queries.
-    \begin{lstlisting}[gobble=8,label={code:bootstrap-less-breakpoints-usage},caption={Media queries can easily be replaced with element queries. By using the \code{elq-breakpoints} postfix option; the breakpoint constants can be used directly in the selectors. Notice that only three lines have been altered.},captionpos=b]]
+    \begin{lstlisting}[gobble=6,label={code:bootstrap-less-breakpoints-usage},caption={Media queries can easily be replaced with element queries. By using the \code{elq-breakpoints} postfix option; the breakpoint constants can be used directly in the selectors. Notice that only three lines have been altered.},captionpos=b]]
       /* File "less/grid.less" of Bootstrap. */
 
-      // Original Boostrap using media queries.
+      // Original Bootstrap using media queries.
       .container {
-        .container-fixed();
-
         @media (min-width: @screen-sm-min) {
           width: @container-sm;
         }
-        @media (min-width: @screen-md-min) {
-          width: @container-md;
-        }
-        @media (min-width: @screen-lg-min) {
-          width: @container-lg;
-        }
+        ...
       }
 
       // ELQ Bootstrap using element queries.
       .container {
-        .container-fixed();
-
         &.elq-width-above-@{screen-sm-min} {
           width: @container-sm;
         }
-        &.elq-width-above-@{screen-md-min} {
-          width: @container-md;
-        }
-        &.elq-width-above-@{screen-lg-min} {
-          width: @container-lg;
-        }
+        ...
       }
     \end{lstlisting}
     %\todo{Write how many chars that differ?}
