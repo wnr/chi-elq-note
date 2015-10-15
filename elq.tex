@@ -390,45 +390,19 @@
 
     \subsubsection{A grid API}
       To further show the potential of \elq{}, we have created a plugin that enables a high-level API for responsive modules.
-      The API enables developers to use responsive grids and utility classes very similar to the ones defined by the CSS Bootstrap framework.
+      The API enables developers to use responsive grids consisting of twelve columns and utility classes very similar to the ones defined by the CSS Bootstrap framework \cite{bootstrap}.
       
+      The following is an example grid:
 
-      TODO: Do not show Bootstrap's API. Only present own.
-
-
-      The following is an example grid that uses the Bootstrap API:
-
-      \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={code:bootstrap-grid-example}]]
-        <div class="container">
-          <div class="row">
-            <div class="col-md-4 col-lg-6">
-              ...
-            </div>
-            <div class="col-md-4" col-lg-6>
-              ...
-            </div>
-            <div class="col-md-4 hidden-lg-up">
-              ...
-            </div>
-          </div>
-        </div>
-      \end{lstlisting}
-
-      The example grid is defined to be single columned for small viewports, triple columned for medium viewports, and double columned for large viewports.
-      It should be noted that the last column is hidden for large viewports.
+      %The example grid is defined to be single columned for small viewports, triple columned for medium viewports, and double columned for large viewports.
+      %It should be noted that the last column is hidden for large viewports.
       
-      This API uses media queries and supports a fixed set of breakpoints that can be used to determine when the grid should change layout (depending on the viewport size).
-      The column classes defines the behaviour of the grid, and has the syntax \code{col-[breakpoint]-[size]}.
-      The predefined breakpoints are \code{xs, sm, md, lg, xl} and the size may be between 1 and 12.
+      %This API uses media queries and supports a fixed set of breakpoints that can be used to determine when the grid should change layout (depending on the viewport size).
+      %The column classes defines the behaviour of the grid, and has the syntax \code{col-[breakpoint]-[size]}.
+      %The predefined breakpoints are \code{xs, sm, md, lg, xl} and the size may be between 1 and 12.
 
-      The syntax of our API does not differ much from the Bootstrap API, but the behavior does.
-      The columns of our API respond to the parent \code{row} instead of the viewport.
-      Therefore, we have altered the column classes to also accept custom breakpoints so that developers have full control of the grid behavior.
-      The \code{[breakpoint]} part of the column class can be any positive number, and may optionally be postfixed with a unit.
-      Currently, the supported units are \code{px, em, rem}.
-      If the unit is omitted, \code{px} is assumed.
-      The following is an example grid that uses our API:
-
+      %The syntax of our API does not differ much from the Bootstrap API, but the behavior does.
+      
       \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={}]]
         <div class="container">
           <div class="row">
@@ -448,9 +422,14 @@
       The example grid is defined to be single columned when the width of the grid is below 500 pixels, triple columned when the width is between 500 and 700 pixels, and double columned for when the width is above 700 pixels.
       It should be noted that the last column is hidden when the width is above 700 pixels.
 
-      This enables developers to define grid behaviors by pixel precision in nestable modules, while maintaing the familiar Bootstrap API style.
-
-      TODO: Write about generated CSS?
+      The columns of our API respond to the parent \code{row} instead of the viewport.
+      Therefore, we have altered the column classes to also accept custom breakpoints so that developers have full control of the grid behavior.
+      The \code{[breakpoint]} part of the column class can be any positive number, and may optionally be postfixed with a unit.
+      Currently, the supported units are \code{px, em, rem}.
+      If the unit is omitted, \code{px} is assumed.
+            
+      This enables developers to define grid behaviors by pixel precision in nestable modules.
+      %, while maintaing the familiar Bootstrap API style.
 
 \section{Extensions via plugins}\label{sec:plugins}
   For example, if annotating HTML is undesired it is possible to create a plugin that instead generates element breakpoints by parsing CSS.
