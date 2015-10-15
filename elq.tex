@@ -943,10 +943,8 @@
       @screen-lg-min: 1200px;
     \end{lstlisting}
 
-
-
-    As shown in listing~\ref{code:bootstrap-less-breakpoints-usage}, \gls{media queries} are easily replaced by element queries.
-    \begin{lstlisting}[gobble=6,label={code:bootstrap-less-breakpoints-usage},caption={Media queries can easily be replaced with element queries. By using the \code{elq-breakpoints} postfix option; the breakpoint constants can be used directly in the selectors. Notice that only three lines have been altered.},captionpos=b]]
+    The following example shows how Bootstrap's style definitions are changed from using media queries to using \elq{}'s element queries:
+    \begin{lstlisting}[gobble=6,label={code:bootstrap-less-breakpoints-usage},caption={},captionpos=b]]
       /* File "less/grid.less" of Bootstrap. */
 
       // Original Bootstrap using media queries.
@@ -959,27 +957,34 @@
 
       // ELQ Bootstrap using element queries.
       .container {
-        &.elq-width-above-@{screen-sm-min} {
+        &.elq-min-width-@{screen-sm-min} {
           width: @container-sm;
         }
         ...
       }
     \end{lstlisting}
-    %\todo{Write how many chars that differ?}
+
     By using the power of preprocessors, \gls{ELQ} element queries become as pleasant to work with as \gls{media queries}.
-    In fact, only \textasciitilde50 lines out of \textasciitilde8500 lines of \gls{Bootstrap} \gls{LESS} code needed to be altered.
-    Most changes were similar to the changes shown in listing~\ref{code:bootstrap-less-breakpoints-usage}, which basically replaces the media query syntax with the \gls{ELQ} element queries syntax.
+    In fact, only about 0.6\% of the style code (LESS syntax) need to be altered.
+    Most changes are similar to the one shown above, which replaces the media query syntax with the \gls{ELQ} element queries syntax.
     This is especially advantageous when keeping a forked project up to date with the original project, as fewer diverged lines implies a lowered risk of merge conflicts.
 
+    % Altering the \gls{LESS} code, including the \gls{ELQ} library, and the initiating \gls{JavaScript} is all that is required to make the double column documentation page behave as desired.
+    % Figure~\ref{fig:eval-bootstrap-mq-eq-header}, \ref{fig:eval-bootstrap-mq-eq-matrix} and \ref{fig:eval-bootstrap-mq-eq-grid} show different sections of the double column documentation page empowered by \gls{ELQ} \gls{Bootstrap}.
+    % For reference, the same sections using the original \gls{Bootstrap} are also included to show how they behave without element queries.
+    % As shown in the figures, the double column documentation page using the original \gls{Bootstrap} styles the two columns as if they both have the whole \gls{viewport} width available.
+    % Therefore the two columns intersect because some content elements are styled wider than a column.
+    % The double column documentation page using \gls{ELQ} \gls{Bootstrap} on the other hand enables all \gls{responsive} elements to style themselves according to a parent container \gls{element}.
+    % Therefore, the two half-page columns detect that they only have half of the \gls{viewport} width and style themselves accordingly.
+    % The visual result is the same as having two documentation sites of the original \gls{Bootstrap} in two \code{iframe} elements as two columns (since \code{iframe} elements creates a separate \gls{viewport}).
 
-    Altering the \gls{LESS} code, including the \gls{ELQ} library, and the initiating \gls{JavaScript} is all that is required to make the double column documentation page behave as desired.
-    Figure~\ref{fig:eval-bootstrap-mq-eq-header}, \ref{fig:eval-bootstrap-mq-eq-matrix} and \ref{fig:eval-bootstrap-mq-eq-grid} show different sections of the double column documentation page empowered by \gls{ELQ} \gls{Bootstrap}.
-    For reference, the same sections using the original \gls{Bootstrap} are also included to show how they behave without element queries.
-    As shown in the figures, the double column documentation page using the original \gls{Bootstrap} styles the two columns as if they both have the whole \gls{viewport} width available.
-    Therefore the two columns intersect because some content elements are styled wider than a column.
-    The double column documentation page using \gls{ELQ} \gls{Bootstrap} on the other hand enables all \gls{responsive} elements to style themselves according to a parent container \gls{element}.
-    Therefore, the two half-page columns detect that they only have half of the \gls{viewport} width and style themselves accordingly.
-    The visual result is the same as having two documentation sites of the original \gls{Bootstrap} in two \code{iframe} elements as two columns (since \code{iframe} elements creates a separate \gls{viewport}).
+    In summary we have shown that it is easy to adapt existing responsive code to use \elq{}'s element queries instead of media queries.
+    With only a small number of changes, the widely used Bootstrap framework can be modularized.
+
+    \paragraph{Industrial use of \elq{}}
+    In addition to the Bootstrap case study, we have been gathering experience with the application of \elq{} in large financial applications at EVRY AB.
+    Our practical experience shows that complex applications require a variety of features to be supported by element queries.
+    Such features can be provided effectively by \elq{} plugins.
 
 \begin{table*}[ht!]\center
     \tiny
