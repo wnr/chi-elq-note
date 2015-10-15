@@ -116,7 +116,7 @@
 
 \maketitle
 \begin{abstract}
-  Responsive Web Design (RWD) enables web application to adapt to the characteristics of different devices such as screen size which is important for mobile browsing.
+  Responsive Web Design (RWD) enables web applications to adapt to the characteristics of different devices such as screen size which is important for mobile browsing.
   Today, the only W3C standard to support this adaptability is CSS media queries.
   However, using media queries it is impossible to create applications in a modular way, because responsive elements then always depend on the global context.
   Hence, responsive elements can only be reused if the global context is exactly the same, severely limiting their reusability.
@@ -257,16 +257,12 @@
     Finally, Section~\ref{sec:conclusion} concludes.
 
 
-\section{Background}\label{sec:background}
-  \begin{itemize}
-    \item Explain media queries really short (simple example). Maybe explain some terminology.
-  \end{itemize}
-
+\section{Overview of \elq{}}\label{sec:elq}
   Media queries and element queries are similar in the sense that they both enable developers to define conditional designs that are applied by specified criteria.
   The main difference is the type of criteria that can be used; in media queries device, document, and media criteria are used, while element criteria are used in element queries.
-  It can somewhat simplified be described as that media queries target the document root and up (i.e., the viewport, browser, OS, device, input mechanisms, etc.) while element queries target the document root and down (i.e., elements of the document).
+  It can somewhat simplified be described as that media queries target the document root and up such as viewport, browser, device, and input mechanisms.
+  Element queries target the document root and down, i.e., elements of the document.
 
-\section{Overview of \elq{}}\label{sec:elq}
   To enable element queries, we have developed a novel JavaScript implementation named \elq{}.
   Our implementation satisfied all requirements given in~\ref{sec:reqs}.
   The library have been designed to conform to the standards and specifications of the web languages while providing the features required of building advanced constellations of responsive modules.
@@ -288,7 +284,7 @@
   The cycle detection system is implemented as an conservative algorithm, and may in some cases detect false positives.
 
   \subsection{The API}\label{sec:elq-api}
-    As CSS 3 does not support custom at-rules/selectors \cite{w3c_css_selectors}, responsive elements are annotated in HTML by element attributes.
+    As CSS3 does not support custom at-rules/selectors \cite{w3c_css_selectors}, responsive elements are annotated in HTML by element attributes.
     The main idea is to annotate elements with breakpoints of interest so that children can be conditionally styled in CSS by targeting the different element breakpoint states.
     In this section, we will use the \code{elq-breakpoints} API (that is bundled with \elq{} as default) that observes an element in order to automatically update breakpoint state classes of the element.
     Although not written in the examples, the library also supports attributes defined with the \code{data-} prefix to conform to the HTML standard.
@@ -645,12 +641,7 @@
   
   \subsection{Element Resize Detection}\label{sec:imp_erd}
     Unfortunately, there is no standardized resize event for arbitrary elements \cite{w3c_dom2_events}.
-    Only documents emit resize events in modern browsers and therefore such events can only be observed for frame elements (since a frame \gls{element} has its own \gls{document}).
-    According to the general use case described in Section~\ref{sec:eq-definitions}, a valid limitation is to only support \gls{element} resize detection for non-void elements (i.e., elements that may contain content).
-    This limitation is important since most approaches depend on injecting elements into the target \gls{element}.
-    It is a reasonable limitation since void elements can easily be wrapped with non-void elements without affecting the page visually.
-
-    A naive approach to detecting element resize events is to have a script continously checking elements if they have resized given some interval (also known as polling).
+    A naive approach to detecting element resize events is to have a script continously check elements if they have resized given some interval (polling).
     This approach is appealing because it does not mutate the \gls{DOM}, supports arbitrary elements, and it provides excellent compatibility.
     However, in order to prevent the \gls{responsive} elements lagging behind the size changes of the user interface, polling needs to be performed quite frequently.
     The problem is that each poll would force the layout queue to be flushed since the computed style of elements needs to be retrieved in order to know if elements have resized or not.
@@ -663,25 +654,18 @@
 
     It is desired to instead have an event-based approach that only performs additional computations when an actual element resize has happened.
     This is achieved by the resize detection subsystem of \elq{} by using two independent injecting approaches, both originally presented by \cite{backalley}.
+    These appraoches are limited to non-void elements, i.e., elements that may have content.
+    It is a reasonable limitation since void elements can easily be wrapped with non-void elements without affecting the page visually.
 
     \paragraph{Object-based resize detection}
-    The first approach is to inject \code{object} elements into the target element, which can be listened to resize events since \code{object} elements are frames.
+    Only documents emit resize events in modern browsers and therefore such events can only be observed for frame elements (since a frame \gls{element} has its own \gls{document}).
+    This approach injects \code{object} elements into the target element, which can be listened to resize events since \code{object} elements are frames.
     The \code{object} is styled so that it always matches the size of the target \gls{element} and so that it does not affect the page visually.
     This approach has good browser compatability and excellent resize detection performance, but imposes severe performance impacts during injection since \code{object} elements use a significant amount of memory.
-    The main algorithm that is performed when an element $e$ is to be observed for resize events is the following:
-    \begin{enumerate}
-      \item\label{itm:erd-algo-original-object-1} Get the computed style of $e$.
-      \item                                       If the element is positioned (i.e., \code{position} is not \code{static}) the next step is \ref{itm:erd-algo-original-object-4}.
-      \item\label{itm:erd-algo-original-object-3} Set the position of $e$ to be \code{relative}. Here additional checks can be performed to warn the developer about unwanted side effects of doing this.
-      \item\label{itm:erd-algo-original-object-4} Create an \code{object} element and attach an event handler for the \code{load} event. When the element has been styled and configured properly, it is injected into~$e$.
-      \item                                       The algorithm waits for the \code{load} event handler to be called by the \gls{layout engine}. When the handler is called, a \code{resize} event handler is attached to the \gls{document} of the \code{object} \gls{element}.
-    \end{enumerate}
+    % Could mentuon that I was unable to optimize this due to injecting an object forced a full layout.
 
-    Step \ref{itm:erd-algo-original-object-1} and \ref{itm:erd-algo-original-object-3} could theoretically be executed in different batches to avoid \gls{layout thrashing}.
-    Unfortunately, each \code{object} element creation in step \ref{itm:erd-algo-original-object-4} forces a full layout, which makes the batch processing optimization negligible.
-    Since the creation of \code{object} elements forms the significant performance penalty, no further optimization attempts were made.
-
-    The second approach is to injects an \gls{element} that contains multiple overflowing elements that listen to scroll events.
+    \paragraph{Scroll-based resize detection}
+    This approach injects an \gls{element} that contains multiple overflowing elements that listen to scroll events.
     The overflowing elements are styled so that \code{scroll} events are emitted when the target \gls{element} is resized.
     For detecting when the target \gls{element} shrinks, two elements are needed; one for handling the scrollbars and one for causing them to scroll.
     Similarly, for detecting when the target \gls{element} expands, two elements are needed in the same way.
@@ -1040,7 +1024,32 @@
     Therefore, the two half-page columns detect that they only have half of the \gls{viewport} width and style themselves accordingly.
     The visual result is the same as having two documentation sites of the original \gls{Bootstrap} in two \code{iframe} elements as two columns (since \code{iframe} elements creates a separate \gls{viewport}).
 
-
+\begin{table*}[ht!]\center
+    \tiny
+    \begin{tabular}[t]{ l p{3cm} l l l p{3cm} }
+      \multicolumn{2}{l}{Implementation} & Syntax & Resize detection & Page type & Comments \\
+      \hline
+      \cite{eq_imp_magichtml} &             MagicHTML &                                   Invalid &   - &                          Static &    Compiles invalid CSS to valid CSS at server side. \\
+      \cite{eq_imp_eqcss} &                 EQCSS &                                       Invalid &   Viewport only &              Dynamic     \\
+      \cite{eq_imp_prollyfill-min-width} &  Element Media Queries &                       Invalid &   Non-void elements &   Dynamic &   Flow-based element resizing detection. \\
+      \cite{eq_imp_localised-css} &         Localised CSS &                               Invalid &   Arbitrary elements &  Dynamic &   Polling-based element resizing detection. \\
+      \cite{eq_imp_gss} &                   Grid Style Sheets 2.0 &                       Invalid &   Arbitrary elements &  Dynamic &   Using the Cassowary constraints solver. \\
+      \cite{eq_imp_classquery} &            Class Query &                                 Valid &     - &                          Static &    Writes \gls{media queries} to style on load. \\
+      \cite{eq_imp_breakpointsjs} &         breakpoints.js &                              Valid &     Viewport only &              Dynamic &   \\
+      \cite{eq_imp_mediaclass} &            MediaClass &                                  Valid &     Viewport only &              Dynamic &   Inline JS syntax. \\
+      \cite{eq_imp_elementquery} &          ElementQuery &                                Valid &     Viewport only &              Dynamic &   \\
+      \cite{eq_imp_responsive-elements} &   Responsive Elements &                         Valid &     Viewport only &              Dynamic &   \\
+      \cite{eq_imp_sickles} &               SickleS &                                     Valid &     Viewport only &              Dynamic &   Parses CSS. \\
+      \cite{eq_imp_responsive-elements-2} & Responsive Elements &                         Valid &     Viewport only &              Dynamic &   \\ 
+      \cite{eq_imp_breaks2000} &            breaks2000 &                                  Valid &     Viewport only &              Dynamic &   \\
+      \cite{eq_imp_eqjs} &                  eq.js &                                       Valid &     Viewport only &              Dynamic &   \\
+      \cite{eq_imp_element-queries} &       Element Queries &                             Valid &     Non-void elements &   Dynamic &   Object-based element resizing detection. \\
+      \cite{eq_imp_css-element-queries} &   CSS Element Queries &                         Valid &     Non-void elements &   Dynamic &   Scroll-based element resizing detection. \\
+      \cite{eq_imp_selector_queries} &      Selector queries and responsive containers &  Valid &     Arbitrary elements &  Dynamic &   Polling-based element resizing detection. \\
+    \end{tabular}
+    \caption{Classification of related element queries libraries.}
+    \label{table:approaches-classifications}
+  \end{table*}
 
 \section{Discussion}\label{sec:discussion}
   % \begin{itemize}
@@ -1076,6 +1085,7 @@
     Support for custom at-rules/selectors would also enable us to define a more natural API in CSS.
     Finally, being able to tell elements to ignore children while computing their size would decrease the need for cycle detection.
 
+
 \section{Related Work}\label{sec:related}
   Since many of related libraries share the same characteristics, they are classified and analyzed in groups.
   A constraint-based approach is presented individually as it differs significantly from the other approaches.
@@ -1096,32 +1106,7 @@
   % in table: Nesting, plugins, ...
 
   % Name~\cite{}
-  \begin{table*}[ht]\center
-    \tiny
-    \begin{tabular}[t]{ l p{3cm} l l l p{3cm} }
-      \multicolumn{2}{l}{Implementation} & Syntax & Resize detection & Page type & Comments \\
-      \hline
-      \cite{eq_imp_magichtml} &             MagicHTML &                                   Invalid &   - &                          Static &    Compiles invalid CSS to valid CSS at server side. \\
-      \cite{eq_imp_eqcss} &                 EQCSS &                                       Invalid &   Viewport only &              Dynamic     \\
-      \cite{eq_imp_prollyfill-min-width} &  Element Media Queries &                       Invalid &   Non-void elements &   Dynamic &   Flow-based element resizing detection. \\
-      \cite{eq_imp_localised-css} &         Localised CSS &                               Invalid &   Arbitrary elements &  Dynamic &   Polling-based element resizing detection. \\
-      \cite{eq_imp_gss} &                   Grid Style Sheets 2.0 &                       Invalid &   Arbitrary elements &  Dynamic &   Using the Cassowary constraints solver. \\
-      \cite{eq_imp_classquery} &            Class Query &                                 Valid &     - &                          Static &    Writes \gls{media queries} to style on load. \\
-      \cite{eq_imp_breakpointsjs} &         breakpoints.js &                              Valid &     Viewport only &              Dynamic &   \\
-      \cite{eq_imp_mediaclass} &            MediaClass &                                  Valid &     Viewport only &              Dynamic &   Inline JS syntax. \\
-      \cite{eq_imp_elementquery} &          ElementQuery &                                Valid &     Viewport only &              Dynamic &   \\
-      \cite{eq_imp_responsive-elements} &   Responsive Elements &                         Valid &     Viewport only &              Dynamic &   \\
-      \cite{eq_imp_sickles} &               SickleS &                                     Valid &     Viewport only &              Dynamic &   Parses CSS. \\
-      \cite{eq_imp_responsive-elements-2} & Responsive Elements &                         Valid &     Viewport only &              Dynamic &   \\ 
-      \cite{eq_imp_breaks2000} &            breaks2000 &                                  Valid &     Viewport only &              Dynamic &   \\
-      \cite{eq_imp_eqjs} &                  eq.js &                                       Valid &     Viewport only &              Dynamic &   \\
-      \cite{eq_imp_element-queries} &       Element Queries &                             Valid &     Non-void elements &   Dynamic &   Object-based element resizing detection. \\
-      \cite{eq_imp_css-element-queries} &   CSS Element Queries &                         Valid &     Non-void elements &   Dynamic &   Scroll-based element resizing detection. \\
-      \cite{eq_imp_selector_queries} &      Selector queries and responsive containers &  Valid &     Arbitrary elements &  Dynamic &   Polling-based element resizing detection. \\
-    \end{tabular}
-    \caption{Classification of related element queries libraries.}
-    \label{table:approaches-classifications}
-  \end{table*}
+  
 
 
   \paragraph{Extended syntax}
@@ -1184,14 +1169,26 @@
   % Additionally, the library evaluates all elements on \gls{DOM} mutations using the \code{MutationObserver} \gls{API}, which does not detect all element resize events as discussed in Section~\ref{sec:imp_erd}.
 
 
-\section{Conclusions}\label{sec:conclusion}
-  \begin{itemize}
-    \item Production ready.
-    \item Probably no standard (or not in a long time).
-  \end{itemize}
+\section{Conclusion}\label{sec:conclusion}
+  % \begin{itemize}
+  %   \item Production ready.
+  %   \item Probably no standard (or not in a long time).
+  % \end{itemize}
 
-  We are confident that \elq{} is a good canditate for solving the problem of modular RWD.
-  We hope for supporting standards by RICG to improve \elq{}, until standardized element queries come in the far future.
+  Responsive Web Design (RWD) enables web applications to adapt to the characteristics of different devices, which is achieved using CSS media queries.
+  However, using media queries it is impossible to create responsive applications in a modular way, because responsive elements then always depend on the global context.
+
+  This paper extends RWD to also include responsive modules through element queries.
+  We present \elq{}, an open-source implementation of our approach, that conforms to the current standards of HTML, CSS and JavaScript.
+  It enables developers to create responsive modules that are independent of their context, and a way to encapsulate their conditional style rules.
+  The element resize detection of \elq{}, used to automatically evaluate element queries on changes of responsive elements, performs up to 37x better than previous algorithms.
+
+  Using a case study based on the popular Bootstrap framework we show that large code bases using media queries can be converted to using \elq{}'s element queries with little effort.
+  Changing only about 0.6\% of the LOC of style related code was sufficient to enable the use of Bootstrap in responsive modules.
+  We also report on first commercial users of \elq{}.
+  
+  We believe \elq{} is an important contribution to realizing a \emph{modular} form of element queries, in particular since standardization bodies like the RICG do not intend to standardize a complete solution.
+  In the future we intend to improve \elq{} by using forthcoming standards developed by the RICG to avoid some current limitations.
 
 %\end{document}  % This is where a 'short' article might terminate
 
