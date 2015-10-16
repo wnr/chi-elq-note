@@ -844,8 +844,8 @@
     As evident in the figure, the optimized \elq{} approach has significantly reduced injection times.
     It achieves a 37-fold speedup compared to the object-based approach and a 17-fold speedup compared to the scroll-based approach when preparing 700 elements for resize detection.
 
-    
-
+    As a fallback, \elq{} uses the object-based approach as a fallback for legacy browsers.
+    Therefore the performance of the \elq{} resize detection system is at minimum as performant as related approaches.
 
     % \begin{figure}[h!]
     %   \tiny
@@ -877,11 +877,7 @@
     %   \end{center}
     % \end{figure}
 
-    TODO: Write about other browsers? Safari 9 and Chrome seem to have similar results. IE and FireFox and legacy version of Safari. Write that \elq{} will at worst be as slow as the other ones (since it uses the object-based approach as a fallback).
-
-    TODO: Write about resize detection for all approaches?
-
-    TODO: Mention the flow-based solution quickly (as we talk about it in the related works section)
+    TODO: Write about other browsers. Safari 9 and Chrome seem to have similar results. IE and FireFox and legacy version of Safari. Write that \elq{} will at worst be as slow as the other ones (since it uses the object-based approach as a fallback).
 
     % TODO: Add to appendix.
 
@@ -1070,7 +1066,7 @@
   CCSS~\cite{badros1999constraint} proposes a more general and flexible alternative to CSS.
   As the name suggests, the idea of \gls{CCSS} is to layout documents based on constraints.
   According to its authors, the constraint-based approach provides extended features and reduced complexity compared to CSS.
-  To solve the constraints CCSS uses the Cassowary constraint solving algorithm~\cite{cassowary}.
+  To solve the constraints CCSS uses the Cassowary constraint solving algorithm~\cite{BadrosBS01}.
 
   The Grid Style Sheets library \cite{eq_imp_gss} builds upon the ideas of \gls{CCSS} and uses a \gls{JavaScript} port~\cite{cassowary_js} of Cassowary to solve the constraints at runtime.
   While not directly offering element queries, the library enables the possibility to conditionally style elements by \gls{element} criteria and thus makes it a good candidate to solve the problem of \gls{responsive} modules.
