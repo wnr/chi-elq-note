@@ -682,10 +682,8 @@
     Even if some layout engines are unable to queue the repositing of scrollbars, it is still beneficial to batch process the algorithm since only pure layouts need to be performed (instead of having to recompute styles and synchronize the \gls{DOM} and render trees before each layout).
     As step~\ref{itm:erd-algo-original-scroll-6} is performed by the \gls{layout engine} asynchronously and does not interact with the \gls{DOM}, it does not need to be batch processed.
 
-    TODO: Write about issues that has also been resolved, such as 0-size bug and scroll-sizes?
-
 \section{Empirical evaluation}\label{sec:eval}
-  \subsection{Performance}
+  \subsection{Performance}\label{sec:eval-perf}
     Only the performance of the element resize detection system has been performed.
     The reason for this is that this system entails the significant performance penalties of the library.
     Also, it is hard to compare performance results of related libraries since the functionality is so different.
@@ -1009,7 +1007,7 @@
       \cite{eq_imp_css-element-queries} &   CSS Element Queries &                         Valid &     Non-void elements &   Dynamic &   Scroll-based element resizing detection. \\
       \cite{eq_imp_selector_queries} &      Selector queries and responsive containers &  Valid &     Arbitrary elements &  Dynamic &   Polling-based element resizing detection. \\
     \end{tabular}
-    \caption{Classification of related element queries libraries.}
+    \caption{Classification of related approaches to modular RWD.}
     \label{table:approaches-classifications}
   \end{table*}
 
@@ -1049,9 +1047,8 @@
 
 
 \section{Related Work}\label{sec:related}
-  Since many of related libraries share the same characteristics, they are classified and analyzed in groups.
-  A constraint-based approach is presented individually as it differs significantly from the other approaches.
-  It should be noted that most of the current approaches are combinations of different classes.
+  Table~\ref{table:approaches-classifications} attempts to classify all existing approaches, of modular RWD, known to us. 
+  We discuss these approaches according to two different aspects: (a) syntax extensions and (b) resize detection.
 
   % The related libraries are classified by the following characteristics:
   % \begin{itemize}
@@ -1071,18 +1068,18 @@
   
 
 
-  \paragraph{Extended syntax}
+  \paragraph{Syntax extensions}
   The libraries \cite{eq_imp_magichtml,eq_imp_eqcss,eq_imp_prollyfill-min-width,eq_imp_localised-css,eq_imp_gss} have in common that they require developers to write custom (invalid) \gls{CSS}, unlike \elq{}.
-  Since they do not conform to the \gls{CSS} standard, new features can be supported through custom \gls{CSS} which is parsed in JavaScript.
+  Since they do not conform to the \gls{CSS} standard, new features are supported through custom \gls{CSS} parsed using JavaScript.
   As shown by \cite{eq_imp_eqcss,eq_imp_gss} quite advanced features can be implemented this way.
   Additionally, adding new \gls{CSS} features implies that it is possible to implement a solution to element queries that does not require any changes to the \gls{HTML}, which may be preferable since all styling then can be written in \gls{CSS}.
-  However, there are numerous drawbacks with libraries that require invalid \gls{CSS}.
+  However, there are numerous drawbacks with libraries that require custom \gls{CSS}.
 
   % Flow-based: predecessor of the techniques discussed in this paper.
 
   % Always compare mentioned libraries compared to ELQ
   
-  Extended syntax violates the requirement, compilation step performance, cite thesis.
+  TODO: Extended syntax violates the requirement, compilation step performance, cite thesis.
 
   % First, it requires a compilation step in order to produce valid \gls{CSS} that layout engines understand.
   % This can either be done at server side or in the \gls{browser} at runtime.
@@ -1105,13 +1102,28 @@
   % Third, the custom \gls{API} and parser need to be kept up to date with \gls{CSS} standards in order to make sure new features of \gls{CSS} are supported and that they are not conflicting with the custom \gls{API}.
 
   \paragraph{Resize detection}
-  Most libraries simply observe the \gls{viewport} resize event, which may be enough for static pages but not enough to satisfy the requirements of reusable responsive modules.
+  Most libraries simply observe the \gls{viewport} resize event, which may be enough for static pages, but not enough to satisfy the requirements of reusable responsive modules.
   The libraries \cite{eq_imp_localised-css,eq_imp_selector_queries,eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} have in common that they observe elements for resize events.
   The libraries \cite{eq_imp_localised-css,eq_imp_selector_queries} use polling to detect element resize.
-
   The three remaining libraries use three different injection approaches, as described in Section~\ref{sec:imp_erd}, to detect element resize events; \cite{eq_imp_element-queries} uses the object-based solution, \cite{eq_imp_prollyfill-min-width} uses the flow-based solution, and \cite{eq_imp_css-element-queries} uses the scroll-based solution.
-  As shown in the evaluation Section~\ref{sec:eval-performance}, all three approaches have significanly less performance than the element resizing detection system used in \gls{ELQ} for modern browsers.
-  Also, recall from Section~\ref{sec:imp_erd} that the flow-based and scroll-based approaches both have limitations and bugs.
+  As shown in Section~\ref{sec:eval-perf}, all three approaches have significanly less performance than the element resizing detection system used in \gls{ELQ}.
+
+  TODO: Make sure all libs in table are summarized.
+
+  \paragraph{Constraint-based CSS}
+  CCSS~\cite{badros1999constraint} proposes a more general and flexible alternative to CSS.
+  As the name suggests, the idea of \gls{CCSS} is to layout documents based on constraints.
+  According to its authors, the constraint-based approach provides extended features and reduced complexity compared to CSS.
+  To solve the constraints CCSS uses the Cassowary constraint solving algorithm~\cite{cassowary}.
+
+  The Grid Style Sheets library \cite{eq_imp_gss} builds upon the ideas of \gls{CCSS} and uses a \gls{JavaScript} port~\cite{cassowary_js} of Cassowary to solve the constraints at runtime.
+  While not directly offering element queries, the library enables the possibility to conditionally style elements by \gls{element} criteria and thus makes it a good candidate to solve the problem of \gls{responsive} modules.
+  However, the library has two major issues: performance and browser compatibility \cite{gss_issue}.
+  One approach to resolve both issues is to precompute the layout in a compilation step at the server.
+  However, precompiling styles implies static layouts.
+  The authors discuss other approaches~\cite{gss_issue} that would increase the performance while limiting the dynamism of page layout.
+  In contrast, \elq{} only considers element queries, but without these limitations and with higher performance.
+
 
   % TODO: Write about this?
   % \paragraph{Constraint-based approach}
