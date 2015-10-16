@@ -986,26 +986,27 @@
 
 \begin{table*}[ht!]\center
     \tiny
-    \begin{tabular}[t]{ l p{3cm} l l l p{3cm} }
-      \multicolumn{2}{l}{Implementation} & Syntax & Resize detection & Page type & Comments \\
+    \begin{tabular}[t]{ p{3cm} l l l l l }
+      Implementation & Syntax & Resize detection & Page dynamism  & Composability & Cycle detection \\
       \hline
-      \cite{eq_imp_magichtml} &             MagicHTML &                                   Invalid &   - &                          Static &    Compiles invalid CSS to valid CSS at server side. \\
-      \cite{eq_imp_eqcss} &                 EQCSS &                                       Invalid &   Viewport only &              Dynamic     \\
-      \cite{eq_imp_prollyfill-min-width} &  Element Media Queries &                       Invalid &   Non-void elements &   Dynamic &   Flow-based element resizing detection. \\
-      \cite{eq_imp_localised-css} &         Localised CSS &                               Invalid &   Arbitrary elements &  Dynamic &   Polling-based element resizing detection. \\
-      \cite{eq_imp_gss} &                   Grid Style Sheets 2.0 &                       Invalid &   Arbitrary elements &  Dynamic &   Using the Cassowary constraints solver. \\
-      \cite{eq_imp_classquery} &            Class Query &                                 Valid &     - &                          Static &    Writes \gls{media queries} to style on load. \\
-      \cite{eq_imp_breakpointsjs} &         breakpoints.js &                              Valid &     Viewport only &              Dynamic &   \\
-      \cite{eq_imp_mediaclass} &            MediaClass &                                  Valid &     Viewport only &              Dynamic &   Inline JS syntax. \\
-      \cite{eq_imp_elementquery} &          ElementQuery &                                Valid &     Viewport only &              Dynamic &   \\
-      \cite{eq_imp_responsive-elements} &   Responsive Elements &                         Valid &     Viewport only &              Dynamic &   \\
-      \cite{eq_imp_sickles} &               SickleS &                                     Valid &     Viewport only &              Dynamic &   Parses CSS. \\
-      \cite{eq_imp_responsive-elements-2} & Responsive Elements &                         Valid &     Viewport only &              Dynamic &   \\ 
-      \cite{eq_imp_breaks2000} &            breaks2000 &                                  Valid &     Viewport only &              Dynamic &   \\
-      \cite{eq_imp_eqjs} &                  eq.js &                                       Valid &     Viewport only &              Dynamic &   \\
-      \cite{eq_imp_element-queries} &       Element Queries &                             Valid &     Non-void elements &   Dynamic &   Object-based element resizing detection. \\
-      \cite{eq_imp_css-element-queries} &   CSS Element Queries &                         Valid &     Non-void elements &   Dynamic &   Scroll-based element resizing detection. \\
-      \cite{eq_imp_selector_queries} &      Selector queries and responsive containers &  Valid &     Arbitrary elements &  Dynamic &   Polling-based element resizing detection. \\
+       MagicHTML \cite{eq_imp_magichtml}                          &                       Custom CSS  &   - &                             Static &     -                  & -  \\
+       EQCSS \cite{eq_imp_eqcss}                                  &                       Custom CSS  &   Viewport only &                 Dynamic &    Full support       & -  \\
+       Element Media Queries \cite{eq_imp_prollyfill-min-width}   &                       Custom CSS  &   Non-void elements &             Dynamic &    -                  & -  \\
+       Localised CSS \cite{eq_imp_localised-css}                  &                       Custom CSS  &   Arbitrary elements &            Dynamic &    -                  & -  \\
+       Grid Style Sheets 2.0 \cite{eq_imp_gss}                    &                       Custom CSS  &   Arbitrary elements &            Dynamic &    Partial support    & -  \\
+       Class Query \cite{eq_imp_classquery}                       &                                   &   - &                             Static &     -                  & -  \\
+       breakpoints.js \cite{eq_imp_breakpointsjs}                 &                                   &   Viewport only &                 Dynamic &    -                  & -  \\
+       MediaClass \cite{eq_imp_mediaclass}                        &                                   &   Viewport only &                 Dynamic &    -                  & -  \\
+       ElementQuery \cite{eq_imp_elementquery}                    &                                   &   Viewport only &                 Dynamic &    -                  & -  \\
+       Responsive Elements \cite{eq_imp_responsive-elements}      &                                   &   Viewport only &                 Dynamic &    -                  & -  \\
+       SickleS \cite{eq_imp_sickles}                              &                                   &   Viewport only &                 Dynamic &    -                  & -  \\
+       Responsive Elements \cite{eq_imp_responsive-elements-2}    &                                   &   Viewport only &                 Dynamic &    -                  & -  \\ 
+       breaks2000 \cite{eq_imp_breaks2000}                        &                                   &   Viewport only &                 Dynamic &    -                  & -  \\
+       eq.js \cite{eq_imp_eqjs}                                   &                                   &   Viewport only &                 Dynamic &    -                  & -  \\
+       Element Queries \cite{eq_imp_element-queries}              &                                   &   Non-void elements &             Dynamic &    -                  & -  \\
+       CSS Element Queries \cite{eq_imp_css-element-queries}      &                                   &   Non-void elements &             Dynamic &    -                  & -  \\
+       Selector queries and responsive containers \cite{eq_imp_selector_queries}                    & &   Arbitrary elements &            Dynamic &    -                  & -  \\
+       \elq{}                                                                                       & &   Non-void elements &             Dynamic &    Full support       & Yes \\
     \end{tabular}
     \caption{Classification of related approaches to modular RWD.}
     \label{table:approaches-classifications}
@@ -1050,65 +1051,20 @@
   Table~\ref{table:approaches-classifications} attempts to classify all existing approaches, of modular RWD, known to us. 
   We discuss these approaches according to two different aspects: (a) syntax extensions and (b) resize detection.
 
-  % The related libraries are classified by the following characteristics:
-  % \begin{itemize}
-  %   \item \textbf{Syntax}:  Libraries can either require custom syntax or valid syntax.
-  %                           Custom syntax is considered to be invalid syntax since it does not conform to \gls{web} language standards (custom \gls{CSS} is the most common case).
-  %                           Libraries that do not require custom syntax are considered to have valid syntax.
-  %   \item \textbf{Page type}: All libraries support static pages and some also support dynamic pages.
-  %                             Static pages do not change layout at runtime and therefore no \gls{element} resize detection or element queries library runtime is needed.
-  %                             Dynamic pages may change layout at runtime and therefore need an element queries library runtime with \gls{element} resize detection.
-  %   \item \textbf{Resize detection}:  Libraries need to detect \gls{element} resize events for dynamic layouts and there are three levels of detection support for elements: \gls{viewport} only, non-void elements, and arbitrary elements.
-  %                                     It should be noted that this only reflects the theoretical support of elements; in practice many libraries have issues and bugs that make them unable to detect all \gls{element} resize events.
-  % \end{itemize}
-  
-  % in table: Nesting, plugins, ...
-
-  % Name~\cite{}
-  
-
-
   \paragraph{Syntax extensions}
-  The libraries \cite{eq_imp_magichtml,eq_imp_eqcss,eq_imp_prollyfill-min-width,eq_imp_localised-css,eq_imp_gss} have in common that they require developers to write custom (invalid) \gls{CSS}, unlike \elq{}.
+  The libraries \cite{eq_imp_magichtml,eq_imp_eqcss,eq_imp_prollyfill-min-width,eq_imp_localised-css,eq_imp_gss} have in common that they require developers to write custom \gls{CSS}, unlike \elq{}.
   Since they do not conform to the \gls{CSS} standard, new features are supported through custom \gls{CSS} parsed using JavaScript.
   As shown by \cite{eq_imp_eqcss,eq_imp_gss} quite advanced features can be implemented this way.
   Additionally, adding new \gls{CSS} features implies that it is possible to implement a solution to element queries that does not require any changes to the \gls{HTML}, which may be preferable since all styling then can be written in \gls{CSS}.
   However, there are numerous drawbacks with libraries that require custom \gls{CSS}.
-
-  % Flow-based: predecessor of the techniques discussed in this paper.
-
-  % Always compare mentioned libraries compared to ELQ
-  
-  TODO: Extended syntax violates the requirement, compilation step performance, cite thesis.
-
-  % First, it requires a compilation step in order to produce valid \gls{CSS} that layout engines understand.
-  % This can either be done at server side or in the \gls{browser} at runtime.
-  % Server-side compilation implies that the layout of the page cannot be changed at runtime and is therefore only useful for static pages, and not enough to satisfy the requirements of reusable responsive modules.
-  % By instead having the compilation step at runtime, dynamic layouts can be used since element queries may be re-evaluated on layout changes.
-  % However, the performance impact of having the compilation step at runtime can be significant for the following reasons:
-  % \begin{itemize}
-  %   \item The received \gls{CSS} cannot be understood by the \gls{browser}, therefore all parsing and reasoning about it has to be postponed until the library script executes.
-  %   Note that layout engines could in theory parse the \gls{CSS} and perform speculative selector matching while waiting for other parts of the page to finish (such as executing scripts), which cannot be done with invalid \gls{CSS}.
-  %   \item When the library script executes it has to parse the custom \gls{CSS} --- a process which is most likely slower than \gls{native} parsing.
-  %   \item When parsed, the library needs to apply its logic to the parsed \gls{CSS} and produce valid \gls{CSS}. The produced \gls{CSS} needs to be applied to the \gls{document} by mutating the \gls{DOM}.
-  %   \item The \gls{layout engine} needs to parse the \gls{CSS} added to the \gls{DOM}, which means that the styles of the page is parsed twice.
-  %   \item The custom parser engine needs to be included in the page, which implies a larger library script size.
-  % \end{itemize}
-  
-  % Second, by not conforming to \gls{CSS} standards many tools such as preprocessors, validators and linters are not compatible.
-  % Also, editors and other code-displaying tools are not able to understand the syntax and are therefore not able to highlight the code properly.
-  % It should be noted that it is in some cases possible to create plugins to such tools to extend their capabilities.
-
-  % Third, the custom \gls{API} and parser need to be kept up to date with \gls{CSS} standards in order to make sure new features of \gls{CSS} are supported and that they are not conflicting with the custom \gls{API}.
+  Extending the CSS syntax violates the requirement of compatability and also introduces a compilation step which decreases the performance \cite{elq-thesis}.
 
   \paragraph{Resize detection}
-  Most libraries simply observe the \gls{viewport} resize event, which may be enough for static pages, but not enough to satisfy the requirements of reusable responsive modules.
-  The libraries \cite{eq_imp_localised-css,eq_imp_selector_queries,eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} have in common that they observe elements for resize events.
-  The libraries \cite{eq_imp_localised-css,eq_imp_selector_queries} use polling to detect element resize.
-  The three remaining libraries use three different injection approaches, as described in Section~\ref{sec:imp_erd}, to detect element resize events; \cite{eq_imp_element-queries} uses the object-based solution, \cite{eq_imp_prollyfill-min-width} uses the flow-based solution, and \cite{eq_imp_css-element-queries} uses the scroll-based solution.
-  As shown in Section~\ref{sec:eval-perf}, all three approaches have significanly less performance than the element resizing detection system used in \gls{ELQ}.
-
-  TODO: Make sure all libs in table are summarized.
+  The libraries \cite{eq_imp_eqcss,eq_imp_breakpointsjs,eq_imp_mediaclass,eq_imp_elementquery,eq_imp_responsive-elements,eq_imp_sickles,eq_imp_responsive-elements-2,eq_imp_breaks2000,eq_imp_eqjs} simply observe the \gls{viewport} resize event, which may be enough for static pages, but not enough to satisfy the requirements of reusable responsive modules.
+  Approach \cite{eq_imp_classquery} does not detect resize events at all.
+  Like \elq{}, \cite{eq_imp_localised-css,eq_imp_selector_queries,eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} observe \emph{elements} for resize events.
+  The libraries \cite{eq_imp_localised-css,eq_imp_selector_queries} use polling while \elq{} and \cite{eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} use different injection approaches, as described in Section~\ref{sec:imp_erd}.
+  As shown in Section~\ref{sec:eval-perf}, the injection approaches used by related libraries have significanly less performance than the element resizing detection system used in \gls{ELQ}.
 
   \paragraph{Constraint-based CSS}
   CCSS~\cite{badros1999constraint} proposes a more general and flexible alternative to CSS.
@@ -1123,25 +1079,6 @@
   However, precompiling styles implies static layouts.
   The authors discuss other approaches~\cite{gss_issue} that would increase the performance while limiting the dynamism of page layout.
   In contrast, \elq{} only considers element queries, but without these limitations and with higher performance.
-
-
-  % TODO: Write about this?
-  % \paragraph{Constraint-based approach}
-  % Shortly after the introduction of \gls{CSS} by the \gls{W3C}, a proposal for \gls{CCSS} was submitted as a more general and flexible alternative to \gls{CSS} \cite{badros1999constraint}.
-  % As the name suggests, the idea of \gls{CCSS} is to layout documents by constraints that would imply a unifying implementation mechanism (i.e., using a constraint solver).
-  % The constraint-based approach provides extended features and reduced complexity compared to \gls{CSS} according to the authors.
-  % The Cassowary\footnote{Cassowary is an incremental constraint solving toolkit that solves systems of linear equalities and inequalities. See \url{http://sourceforge.net/projects/cassowary/} for more information.} constraint solver was used (among other tools) to solve the constraints for the demonstration implementation of \gls{CCSS}.
-  % In 2011, Apple released their Auto Layout\footnote{For more information about Apple's Auto Layout, see \url{https://developer.apple.com/library/ios/documentation/UserExperience/Conceptual/AutolayoutPG/Introduction/Introduction.html}.} technology that uses a similar constraint-based approach.
-  % Apple's implementation also uses the Cassowary algorithms to solve the constraints.
-  % The Grid Style Sheets library \cite{eq_imp_gss} builds upon the ideas of \gls{CCSS} and uses a \gls{JavaScript} port\footnote{See \url{https://github.com/slightlyoff/cassowary.js} for the \gls{JavaScript} port of Cassowary that is used by the Grid Style Sheets library.} of Cassowary to solve the constraints at runtime.
-  % The library also adapted Apple's \gls{VFL} to specify layout constraints.
-  % While not directly offering element queries, the library enables the possibility to conditionally style elements by \gls{element} criteria and thus makes it a good candidate to solve the problem of \gls{responsive} modules.
-  % However, the library has two major issues: performance and browser compatibility \cite{gss_issue}.
-  % One approach to resolve both issues is to precompute the layout in a compilation step at the server.
-  % However, as earlier stated, precompiling styles implies static layouts.
-  % There are other approaches discussed that would increase the performance, but they also limit the dynamism of the page layout.
-  % Additionally, the library evaluates all elements on \gls{DOM} mutations using the \code{MutationObserver} \gls{API}, which does not detect all element resize events as discussed in Section~\ref{sec:imp_erd}.
-
 
 \section{Conclusion}\label{sec:conclusion}
   % \begin{itemize}
