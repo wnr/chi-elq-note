@@ -554,7 +554,7 @@
         activate: activate,
         getBreakpoints: getBreakpoints
       };
-    \end{lstlisting}
+    \end{lstlisting}9
 
     In the \code{activate} method the plugin registers that resize detection is needed for the element and that is should be passed through the update flow.
     It also enables the element to have its breakpoint states applied and have cycle detection being performed.
@@ -565,8 +565,8 @@
 \section{Implementation}\label{sec:imp}
   \subsection{Batch Processing}\label{sec:imp_batch_processor}
     Batch processing is the foundation of the performance gains of our approach, and is therefore used by several subsystems.
-    \elq{} uses a leveled batch processor, which is implemented as a stand-alone project.
-    It serves two purposes: to process batches in different levels to avoid layout thrashing, and to automatically process batches asynchronously for simpler usage.
+    \elq{} uses a leveled batch processor, which is implemented as a stand-alone project.\footnote{\url{https://github.com/wnr/batch-processor}}
+    It serves two purposes: to process batches in different levels to avoid layout thrashing, and to automatically process batches asynchronously to enable multiple synchronous calls being grouped into a pending batch.
 
     Being able to process a batch in levels is important when different types of operations, that are to be processed in a specific order (usually to avoid layout thrashing), needs to be grouped together in a batch.
     For example, a function that doubles an element's width and reads the new calculated height benefits by being batch processed in three levels: reading the width, mutating the width, and reading the height.
@@ -576,16 +576,18 @@
       var batchProcessor = ...;
 
       function doubleWidth(element, callback) {
+        // First level: reading the width.
         var width = element.offsetWidth;
         var newWidth = (width * 2) + "px";
 
-        // Implicit level 0 of the batch. 
-        // Will be processed first.
-        batchProcessor.add(function mutateWidth() {
+        // Second level: mutating the width.
+        // This is executed in level 0 of the batch.
+        batchProcessor.add(0, function mutateWidth() {
           element.style.width = newWidth;
         });
 
-        // Level 1 of the batch. Will be processed 
+        // Third level: reading the height.
+        // This is executed in level 1 of the batch,
         // after level 0. Changing the level number 
         // from "1" to "0" results in layout thrashing.
         batchProcessor.add(1, function readHeight() {
@@ -595,7 +597,11 @@
       }
     \end{lstlisting}
 
-    From this example it is also clear that automated asynchronous processing of batches is important because the function may be called multiple times synchronously, like so:
+    It should be noted that the first level is executed asynchronously by the function, and not handled by the actual batch processor.
+    Since each batch is delayed to execute asynchronously, all synchronous calls of the method is grouped into a pending batch.
+    If the batch would not automatically be delayed, layout thrashing would occur when the method is called multiple times.
+    This results in a 45-fold speedup, when applied to 1000 elements, of the function compared to not processing the batch in levels.
+    It also results in a simple API that allows multiple synchronous calls without causing layout thrashing, like so:
 
     \begin{lstlisting}[gobble=6,label={},caption={},captionpos=b]]
       var elements = [...];
@@ -606,12 +612,7 @@
       });
     \end{lstlisting}
 
-    Since one batch for each function call is processed, layout thrashing occurs which results in a severe performance impact.
-    To solve this, each batch is delayed to execute asynchronously so that all synchronous calls of the method is grouped into a pending batch to be executed asynchronously.
-    This results in a 45-fold speedup when applied to 1000 elements of the function compared to not processing the batch in levels.
-    It also results in a simple API that allows multiple synchronous calls without causing layout thrashing.
-
-    The \code{activate} method of \elq{} is implemented similarly so it may also be called multiple times synchronously without performance penalties like the following example:
+    The \code{activate} method of \elq{} is implemented similarly so it may also be called multiple times synchronously, without performance penalties, like the following example:
 
     \begin{lstlisting}[gobble=6,label={},caption={},captionpos=b]]
       var elements = [...];
@@ -623,7 +624,7 @@
     A naive approach to detecting element resize events is to have a script continously check elements if they have resized given some interval (polling).
     This approach is appealing because it does not mutate the \gls{DOM}, supports arbitrary elements, and it provides excellent compatibility.
     However, in order to prevent the \gls{responsive} elements lagging behind the size changes of the user interface, polling needs to be performed quite frequently.
-    The problem is that each poll would force the layout queue to be flushed since the computed style of elements needs to be retrieved in order to know if elements have resized or not.
+    The problem is that each poll forces the layout queue to be flushed since the computed style of elements needs to be retrieved in order to know if elements have resized or not \cite{elq-thesis}.
     Since the polling is performed all the time the overall page performance is decreased even if the page is idle, which is undesired especially for mobile devices running on battery.
     % \todo{Should make quick test to see how much CPU it uses when polling frequently}
 
@@ -635,12 +636,13 @@
     This is achieved by the resize detection subsystem of \elq{} by using two independent injecting approaches, both originally presented by \cite{backalley}.
     These appraoches are limited to non-void elements, i.e., elements that may have content.
     It is a reasonable limitation since void elements can easily be wrapped with non-void elements without affecting the page visually.
+    Like the batch processor, the resize detection subsystem is also implemented as a stand-alone project.\footnote{\url{https://github.com/wnr/element-resize-detector}}
 
     \paragraph{Object-based resize detection}
     Only documents emit resize events in modern browsers and therefore such events can only be observed for frame elements (since a frame \gls{element} has its own \gls{document}).
     This approach injects \code{object} elements into the target element, which can be listened to resize events since \code{object} elements are frames.
     The \code{object} is styled so that it always matches the size of the target \gls{element} and so that it does not affect the page visually.
-    This approach has good browser compatability and excellent resize detection performance, but imposes severe performance impacts during injection since \code{object} elements use a significant amount of memory.
+    This approach has good browser compatability and excellent resize detection performance, but imposes severe performance impacts during injection since \code{object} elements use a significant amount of memory as shown in Section~\ref{sec:eval-perf}.
     % Could mentuon that I was unable to optimize this due to injecting an object forced a full layout.
 
     \paragraph{Scroll-based resize detection}
@@ -661,7 +663,7 @@
                                                   When the handlers have been called, the injection is finished and observers can be notified on resize events of $e$ when \code{scroll} events occur.
     \end{enumerate}
 
-    Layout thrashing can be avoided by using the leveled batch processor described in Section~\ref{sec:imp_batch_processor}.
+    Layout thrashing can be avoided by using the leveled batch processor described in Section~\ref{sec:imp_batch_processor}, which results in a significant performance improvement as shown in Section~\ref{sec:eval-perf}.
     The algorithm steps are batch processed in the following levels:
     \begin{enumerate}
       \item\label{itm:erd-algo-scroll-level-1}
@@ -675,12 +677,12 @@
       \item\label{itm:erd-algo-scroll-level-3}
         \textbf{The forced layout level:}
         % \todo{Grammar?}
-        Step \ref{itm:erd-algo-original-scroll-5} is performed, which forces the \gls{layout engine} to perform a layout.
+        Step \ref{itm:erd-algo-original-scroll-5} is performed, which forces the some layout engines to perform a layout.
     \end{enumerate}
 
     Since repositioning a scrollbar in some layout engines forces a layout, such operations need to be performed after that all other queueable operations have been executed.
     Therefore, step~\ref{itm:erd-algo-original-scroll-5} is performed in level~\ref{itm:erd-algo-scroll-level-3} as the last step.
-    Even if some layout engines are unable to queue the repositing of scrollbars, it is still beneficial to batch process the algorithm since only pure layouts need to be performed (instead of having to recompute styles and synchronize the \gls{DOM} and render trees before each layout).
+    Even though some layout engines are unable to queue the repositing of scrollbars, it is still beneficial to batch process the algorithm since only pure layouts need to be performed (instead of having to recompute styles and synchronize the \gls{DOM} and render trees before each layout).
     As step~\ref{itm:erd-algo-original-scroll-6} is performed by the \gls{layout engine} asynchronously and does not interact with the \gls{DOM}, it does not need to be batch processed.
 
 \section{Empirical evaluation}\label{sec:eval}
