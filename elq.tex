@@ -688,27 +688,14 @@
 \section{Empirical evaluation}\label{sec:eval}
   \subsection{Performance}\label{sec:eval-perf}
     Only the performance of the element resize detection system has been performed.
-    The reason for this is that this system entails the significant performance penalties of the library.
-    Also, it is hard to compare performance results of related libraries since the functionality is so different.
+    This due to the fact that detecting element resize events entails the significant performance penalties of the library.
+    Also, it is hard to compare performance results of related libraries since the functionality is different.
     Fortunately, element resize detection is the common denominator of all automatic libraries and the results of this system can be compared faithfully.
-
     Measurements and graphs show evaluations performed in Chrome version 42 unless stated otherwise.
-
-    % \todo[inline]{Include evaluation about the cycle detector?}
-    % \todo[inline]{Write about the new "noclasses" option, and maybe flesh out the interplugin API section?}
-    % \todo[inline]{Write that as ELQ is plugin-based, it makes sense to measure the core subsystems by themselves and the plugins enabling element queries in different setups.}
-    % \todo[inline]{Have to measure how elq-breakpoints handles large amount of elements. It might suffor from layout thrashing since might read/write the DOM at invalid stages of the erd subsystem.}
-    % \todo[inline]{Actually since elq-breakpoints is batch-processed, no layout thrashing occurs. However, two disjunct layouts are performed (one for the erd system and one for the plugin) which could theoretically be merged.}
-    % \todo[inline]{Philipp: If possible, show graphs for other browsers than Chrome.}
-    % \todo[inline]{Write about Bootstrap performance here.}
-
-    
-    %\subsection{Element resizing detection}\label{sec:eval-perf-erd}
-      % \todo{Remove this, and analyze the different subsystems in detail: erd, cycle detector, elq-breakpoints, etc.}
 
     The object-based approach (as presented by \cite{backalley}) performs well when detecting resize events, which it does with a delay of 30 ms for 100 elements.
     However, the injection performance is not great as presented in figure~\ref{fig:erd-original-object}.
-    As shown by the graphs, the injection can be performed with adequate performance as long as the number of elements is low.
+    As shown by the graph, the injection can be performed with adequate performance as long as the number of elements is low.
     The approach does not scale well as the number of elements increases.
     This is probably due to the fact that the heap memory usage grows roughly by 0.55 MB per element.
 
@@ -841,48 +828,33 @@
     \end{figure*}
 
     As the scroll-based approach (as presented by \cite{backalley}) does not inject \code{object} elements the memory footprint is reduced significantly, which improves the injection performance.
-    The amount of used memory is so low that reliable measurements could not be gathered.
-    Recall from Section~\ref{sec:imp_erd} that the scroll-based approach was heavily optimized for \elq{}, which is referred to as the \elq{} scroll-based approach.
+    The amount of used memory is too low for reliable measurements.
     See figure~\ref{fig:erd-elq-scroll} for graphs that show how the \elq{} scroll-based approach performs compared to the other two approaches.
     As evident in the figure, the optimized \elq{} approach has significantly reduced injection times.
     It achieves a 37-fold speedup compared to the object-based approach and a 17-fold speedup compared to the scroll-based approach when preparing 700 elements for resize detection.
+    It also performs well when detecting resize events, which it does with a delay of 25 ms for 100 elements.
 
-    As a fallback, \elq{} uses the object-based approach as a fallback for legacy browsers.
+    \elq{} uses the object-based approach as a fallback for legacy browsers.
     Therefore the performance of the \elq{} resize detection system is at minimum as performant as related approaches.
+    See table~\ref{table:erd-layout-engines} for the performance of \elq{}'s two resize detection strategies in different browsers.
+    As shown in the table, the scroll-based approach is suitable for reduced page load, but may in some cases be preferred for better resize detection performance.
 
-    % \begin{figure}[h!]
-    %   \tiny
-    %   \begin{center}
-    %     \centering
-    %     \begin{tikzpicture}
-    %       \begin{axis}[
-    %           width=0.5\textwidth, % Scale the plot to \linewidth
-    %           grid=major, % Display a grid
-    %           grid style={dashed,gray!30}, % Set the style
-    %           xlabel=Number of elements, % Set the labels
-    %           ylabel=Injection time,
-    %           y unit=s, % Set the respective units
-    %           legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
-    %         ]
-    %         \addplot+[red, mark options={red}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-object-original.csv};
-    %         \addplot+[orange, mark options={orange}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-original.csv};
-    %         \addplot+[blue, mark options={blue}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-elq.csv};
-    %         \addplot[dashed,red,domain=1:1500,samples=100] {5.567042796*10^(-6)*x^2 + 4.680174396*10^(-3)*x + 6.495754669*10^(-3)};
-    %         \addplot[dashed,orange,domain=1:1500,samples=100] {4.533208873*10^(-6)*x^2 + 6.320377596*10^(-4)*x + 2.289566005*10^(-2)};
-    %         \addplot[dashed,blue,domain=1:1500,samples=100] {4.071740702*10^(-8)*x^2 + 1.823749404*10^(-4)*x + 1.527042267*10^(-2)};
-    %         \addlegendentry{Original object-based solution}
-    %         \addlegendentry{Scroll-based solution}
-    %         \addlegendentry{ELQ scroll-based solution}
-    %       \end{axis}
-    %     \end{tikzpicture}
-    %   \caption{The injection performance of all three approaches including graph predictions by polynomial regression.}
-    %   \label{fig:erd-approaches-regressed}
-    %   \end{center}
-    % \end{figure}
-
-    TODO: Write about other browsers. Safari 9 and Chrome seem to have similar results. IE and FireFox and legacy version of Safari. Write that \elq{} will at worst be as slow as the other ones (since it uses the object-based approach as a fallback).
-
-    % TODO: Add to appendix.
+    \begin{table}[ht]\center
+      \tiny
+      \begin{tabular}[t]{ l l l l l l l }
+        \multirow{2}{*}{Browsers} & \multicolumn{2}{c}{Injection} & \multicolumn{2}{c}{Resize detection} \\
+        & scroll & object & scroll & object \\
+        \hline
+        Chrome v. 42                & 30 ms   & 550 ms    & 25 ms    & 20 ms  \\
+        Firefox v. 40               & 150 ms  & 1000 ms   & 70 ms    & 30 ms  \\
+        Safari v. 9                 & 100 ms  & 400 ms    & 30 ms    & 20 ms  \\
+        Internet Explorer v. 11     & 350 ms  & 6700 ms   & 100 ms   & 80 ms  \\
+        iOS Safari v. 9             & 350 ms  & 1600 ms   & 150 ms   & 60 ms  \\
+        Android v. 5 Chrome v. 39   & 40 ms   & 1000 ms  & 20 ms     & 10 ms  \\
+      \end{tabular}
+      \caption{Performance of \elq{}'s two resize detection strategies, operating on 100 elements.}
+      \label{table:erd-layout-engines}
+    \end{table}
 
     % \paragraph{Firefox and Safari}
     % As shown, great performance can be achieved with the optimized \elq{} scroll-based solution in Chrome.
