@@ -136,10 +136,11 @@
 %A category including the fourth, optional field follows...
 % \category{D.2.8}{Software Engineering}{Metrics}[complexity measures, performance measures]
 
-\category{D.2.2}{Software Engineering}{Design Tools and Techniques}
-\category{D.2.2}{Software Engineering}{Coding Tools and Techniques}
+%\category{D.2.2}{Software Engineering}{Design Tools and Techniques}
+%\category{D.2.2}{Software Engineering}{Coding Tools and Techniques}
 
-\terms{Design, Performance}
+\category{D.2.13}{Software Engineering}{Reusable Software}[reusable libraries]
+\category{I.7.2}{Document and Text Processing}{Document Preparation}[hypertext/hypermedia, markup languages]
 
 \keywords{Responsive web design, Element queries, CSS, Modularity, Web} % NOT required for Proceedings
 
@@ -154,14 +155,14 @@
   Responsive Web Design (RWD) is an approach to make an application respond to the viewport size and device characteristics.
   This is currently achieved by using CSS media queries that are designed to conditionally design content by the media, such as using serif fonts when printed and sans-serif when viewed on a screen \cite{w3c_css_mq}.
 
-  In order to reduce complexity and enable reusability applications are typically composed of modules, i.e., interchangeable and independent parts that have a single and well-defined responsibility \cite{parnas1972criteria}.
+  In order to reduce complexity and enable reusability, applications are typically composed of modules, i.e., interchangeable and independent parts that have a single and well-defined responsibility \cite{parnas1972criteria}.
   In order for a module to be reusable it must not assume in which context it is being used.
 
   In this paper we focus on the presentation layer of web applications.
   As it stands, using media queries to make the presentation layer responsive precludes modularity.
-  The problem is that there is no way to make a module responsive without it being context-aware, due to media queries only being able to target the viewport.
-  Thus, a responsive module using media queries is layout dependent and has both reduced functionality and limited reusability \cite{elq-thesis}.
-  Therefore, media queries can only be used for RWD of non-modular static applications.
+  The problem is that there is no way to make a module responsive without making it context-aware, due to the fact that media queries can only target the viewport; this means that responsive elements can only respond to changes of the (global) viewport.
+  Thus, a responsive module using media queries is layout dependent and has both reduced functionality and limited reusability~\cite{elq-thesis}.
+  As a result, media queries can only be used for RWD of non-modular static applications.
   In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application becomes a cumbersome task.
 
   \subsection{The Problem Exemplified}
@@ -177,8 +178,8 @@
     When the widget is small it should only display the current temperature.
     Users should also be able to add, remove and resize widgets.
 
-    Such application cannot be built with media queries, since the widgets can have varying sizes independent of the viewport (e.g., the width of one widget is 30\% while another is 40\%).
-    To overcome this problem we must change the application so that widgets always have the same sizes.
+    Such an application cannot be built using media queries, since the widgets can have varying sizes independent of the viewport (e.g., the width of one widget is 30\% while another is 40\%).
+    To overcome this problem we must change the application, so that widgets always have the same sizes.
     This implies that the size of the module and the media query breakpoints are coupled/intertwined, i.e. they are proportional to each other.
     % If we also assume that all widgets always have a fixed percentage, for example 25\% of the viewport width, it is possible to make the module responsive by using media queries.
     The problem now is that we have removed the reusability of the weather module, since it requires the specific width that is correctly proportional to the media query breakpoints. 
@@ -186,15 +187,15 @@
 
     Imagine a company working on a big application that uses media queries for responsiveness (i.e., each responsive module assumes to have a specific percentage of the viewport size).
     The ability to change is desired by both developers and stakeholders, but is limited by this responsive approach.
-    The requirement of changing a menu from being a horizontal top menu to being a vertical side menu implies that all responsive modules break since the assumed proportionality of each module is changed.
-    Even worse, if the menu is also supposed to hide on user input the responsiveness of the module breaks since the layout changes dynamically.
+    The requirement of changing a menu from being a horizontal menu at the top to being a vertical menu on the side implies that all responsive modules break, since the assumed proportionality of each module is changed.
+    Even worse, if the menu is also supposed to hide on user input, the responsiveness of the module breaks, since the layout changes dynamically.
     The latter requirement is impossible to satisfy in a modular way without element queries.
 
-    Additionally, it is popular to define breakpoints relative to the font size so that the conditional designs respect the size of the content \cite{mq-em}.
-    Media queries can only target the font size of the document root, limiting the functionality drastically.
-    With element queries, breakpoints may be defined relative to the font size of the targeted element.
+    Additionally, it is popular to define breakpoints relative to the font size so that conditional designs respect the size of the content~\cite{mq-em}.
+    Media queries can only target the font size of the document root, limiting their functionality drastically.
+    With element queries breakpoints may be defined relative to the font size of the targeted element.
 
-    As we can see, even with limited requirements there still are significant flaws with using media queries for responsive modules.
+    As we can see, even with the exemplified limited requirements there are still significant restrictions when using media queries for responsive modules.
     
     \subsection{Requirements}\label{sec:reqs}
       % \begin{itemize}
@@ -202,7 +203,7 @@
       %   \item Valid language syntaxes (HTML, CSS, JS).
       % \end{itemize}
 
-      The desired behavior of a responsive module is having its inner design responding to the size of \emph{its container} instead of the viewport.
+      The desired behavior of a responsive module is having its inner design respond to the size of \emph{its container} instead of the viewport.
       Only then is a responsive module independent of its layout context.
       Realizing responsive modules requires CSS rules that are conditional upon \emph{elements}, instead of the global viewport.
       We have identified the following requirements of a solution:
@@ -210,53 +211,52 @@
       \begin{itemize}
         \item 
           %It must provide a possibility for an element to change depending on the properties of the parent element.
-          It must provide a possiblity for an element to automatically respond to changes of its parent's properties so that the correct design can be presented.
+          It must provide the possibility for an element to automatically respond to changes of its parent's properties.
         \item
-          It must conform to the syntax of HTML, CSS, and JavaScript so that the compatability of tools, libraries and existing projects is retained.
+          It must conform to the syntax of HTML, CSS, and JavaScript to retain the compatibility of tools, libraries and existing projects.
         \item
           It must have adequate performance for large applications that make heavy use of responsive modules.
         \item
-          It must enable developers to write encapsulated style rules so that responsive modules may be arbitrarily componsed without any conflicting style rules.
+          It must enable developers to write encapsulated style rules, so that responsive modules may be arbitrarily composed without any conflicting style rules.
       \end{itemize}
 
     \subsection{Approach}
       In this paper we extend the concept of RWD to also include responsive modules.
-      The W3C has discussed such a feature under the name of \emph{element queries} given its analogy to media queries \cite{w3c_eq_mail}.
+      The W3C has discussed such a feature under the name of \emph{element queries} given its analogy to media queries~\cite{w3c_eq_mail}.
       This paper presents a novel implementation of element queries in JavaScript named \elq{} that enables new possibilities of RWD.
-      Our approach satisfies all requirements given in~\ref{sec:reqs}.
-      The implementation supports all major browsers, including Internet Explorer version 8, Chrome version 42 (the last Android version 4 compatible browser), Safari version 5, and Opera version 12.
+      Our approach satisfies all requirements given in Section~\ref{sec:reqs}.
+      The implementation supports all major browsers, including Internet Explorer version 8, Chrome version 42 (the last version compatible with Android version 4), Safari version 5, and Opera version 12.
 
       One could argue that a solution does not need to be executed on the client side, but instead generate media queries on the server side for all modules with respect to the current application layout.
-      However, this is insufficient due to the modules then being limited to applications with static layouts \cite{elq-thesis}.
-      Also, the generated media queries would not be able to respond to the user changing properties of elements such as layout and font size.
+      However, this approach is insufficient, since it limits modules to applications with static layouts~\cite{elq-thesis}. Also, the generated media queries would not be able to respond to the user changing properties of elements such as layout and font size.
 
     \subsection{Contributions}
       This paper makes the following contributions:
       \begin{itemize}
-        \item A new design that enables responsive modules while conforming to the syntax of HTML, CSS, and JavaScript.
+        \item A new design for element queries that enables responsive modules while conforming to the syntax of HTML, CSS, and JavaScript.
         \item
           % encapsulation of CSS based styling of elements.
-          Our approach is the first to enable nested elements that are responsive in a modular way, i.e., styling required for RWD is fully encapsulated in the module.
-          As a side effect, responsive modules may also be arbitrarily styled with CSS independently of their context.
+          Our approach is the first to enable nested elements that are responsive in a modular way, i.e., modules fully encapsulate any styling required for RWD.
+          As a side effect, responsive modules may also be arbitrarily styled with CSS independent of their context.
           % An approach that enables encapsulated styling of modules crucial for element queries, such as .
           % As a result, responsive modules using \elq{} may also be nested.
         \item
-          An extensible library architecture that enables plugins to significantly extend the behavior of the library.
+          An extensible architecture that enables plugins to significantly extend the behavior of ELQ, our library implementation.
           This makes it possible to create plugins in order to enable new features and to ease integration of \elq{} into existing projects.
         \item
           A new implementation that offers substantially higher performance than previous approaches.
-          The implementation batch processes DOM operations so that layout thrashing (i.e., forcing the layout engine to perform multiple independent layouts) is avoided.
+          The implementation batch-processes DOM operations in order to avoid layout thrashing (i.e., forcing the layout engine to perform multiple independent layouts).
         \item
-          Since unrestricted element queries may result in cyclic rules \cite{elq-thesis}, we have create a runtime cycle detection system that detects and breaks such cycles.
+          A run-time cycle detection system that detects and breaks cycles stemming from cyclic rules due to unrestricted usage of element queries~\cite{elq-thesis}.
       \end{itemize}
 
-    The rest of the paper is organized as follows:
+    The rest of the paper is organized as follows.
     Section~\ref{sec:elq} introduces \elq{} and its API from a user's perspective.
     In Section~\ref{sec:plugins} we introduce \elq{}'s plugin architecture.
     Section~\ref{sec:imp} provides an overview of the main components of \elq{}'s implementation.
     In Section~\ref{sec:eval} we evaluate the performance of \elq{} and report on case studies.
     Section~\ref{sec:discussion} discusses limitations of \elq{} and related libraries, as well as the current state of standardization of element queries.
-    Finally, Section~\ref{sec:conclusion} concludes.
+    Section~\ref{sec:related} relates \elq{} to prior work, and Section~\ref{sec:conclusion} concludes.
 
 
 \section{Overview of \elq{}}\label{sec:elq}
