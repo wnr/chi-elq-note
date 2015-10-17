@@ -626,7 +626,6 @@
     However, in order to prevent the \gls{responsive} elements lagging behind the size changes of the user interface, polling needs to be performed quite frequently.
     The problem is that each poll forces the layout queue to be flushed since the computed style of elements needs to be retrieved in order to know if elements have resized or not \cite{elq-thesis}.
     Since the polling is performed all the time the overall page performance is decreased even if the page is idle, which is undesired especially for mobile devices running on battery.
-    % \todo{Should make quick test to see how much CPU it uses when polling frequently}
 
     % AHA! So we have actually improved an algorithm that increases the battery-life of mobile devices, which I recall reading about in the mobility track of WWW.    
 
@@ -816,7 +815,7 @@
               \addplot[dashed,red,domain=1:1500,samples=100] {5.567042796*10^(-6)*x^2 + 4.680174396*10^(-3)*x + 6.495754669*10^(-3)};
               \addplot[dashed,orange,domain=1:1500,samples=100] {4.533208873*10^(-6)*x^2 + 6.320377596*10^(-4)*x + 2.289566005*10^(-2)};
               \addplot[dashed,blue,domain=1:1500,samples=100] {4.071740702*10^(-8)*x^2 + 1.823749404*10^(-4)*x + 1.527042267*10^(-2)};
-              \addlegendentry{Original object-based solution}
+              \addlegendentry{Object-based solution}
               \addlegendentry{Scroll-based solution}
               \addlegendentry{ELQ scroll-based solution}
             \end{axis}
@@ -898,14 +897,14 @@
     In order to modularize Bootstrap, we redefine the behavior of its responsive elements so that they no longer respond to the viewport but to enclosing container elements.
     The following observation guides our modularization: all responsive elements should respond to their closest enclosing \code{container} or \code{container-fluid} element.
     Both classes are used in \gls{Bootstrap} to define new parts of a page (e.g., a grid is required to have a container ancestor).
-    They are also nestable, which is important to satisfy the requirement of composable modules.
+    We also enable them to be nestable, which is important to satisfy the requirement of composable modules.
     The breakpoints of the container elements are defined using the \code{elq-breakpoints} API (see Section~\ref{sec:elq-api}).
-    Since the Bootstrap API uses a predefined set of breakpoints, they are all added to the container elements.
+    Since the Bootstrap API uses a predefined set of breakpoints, they are all added to the container elements with JavaScript.
 
     According to this design, we convert all responsive elements of Bootstrap to \code{elq-mirror} elements, since they need to mirror the breakpoints of the nearest ancestor \code{elq-breakpoints} element.
     Since container elements may be nested, they have both the \code{elq-breakpoints} and \code{elq-mirror} behavior.
 
-    The breakpoints of Bootstrap are defined as the following constants:\footnote{The Bootstrap CSS is generated using the LESS preprocessor~\cite{} whose syntax we use.}
+    The breakpoints of Bootstrap are defined as the following constants:\footnote{The Bootstrap CSS is generated using the LESS preprocessor~\cite{lesscss} whose syntax we use.}
     \begin{lstlisting}[gobble=6,label={code:bootstrap-less-breakpoints},caption={},captionpos=b]]
       @screen-sm-min: 480px;
       @screen-md-min: 992px;
@@ -991,9 +990,9 @@
 
   \subsection{Limitations}
     Inherent to all current implementations of element queries is that the conditional style is applied ``one layout behind''.
-    Since a layout pass needs to have been performed in order for an element to change size, the conditional styles defined by the elemnet queries cannot be applied until next layout.
-    Therefore, the element will be display invalid design until another layout has been performed.
-    The flash of invalid design is usually so short that users do not notice it, but in some cases developers need to work around the issue to avoid more apparent results.
+    Since a layout pass needs to have been performed in order for an element to change size, the conditional styles defined by the element queries cannot be applied until next layout.
+    Therefore, the element will display invalid design until another layout has been performed.
+    The flash of invalid design is usually so short that users do not notice it, but in some cases developers need to work around this issue to avoid more apparent results.
 
     Another caveat is presented by the element resize detection approaches, as they mutate the DOM.
     Developers need to be aware of this as CSS selectors and JavaScript may also match the injected elements.
@@ -1001,6 +1000,9 @@
 
     It should be noted that all limitations described only affects the elements that uses the element queries functionality.
     \elq{} does not impose potential problems to other parts of the DOM other than where applied explicitly.
+
+    Currently \elq{} only supports breakpoints for the width and height element properties, as it has been identified as the general use case \cite{elq-thesis}.
+    In the future, we aim to support plugins to define custom breakpoint properties.
 
   \subsection{Standardization}
     It is stated on the W3C's www-style mailing list \cite{w3c_eq_mail} by Zbarsky of Mozilla, Atkins of Google and Sprehn of Google that element queries are infeasible to implement without restricting them.
@@ -1011,8 +1013,6 @@
     Atkins argues that a full implementation that avoids the double layout issue is unlikely to be implemented, and therefore it might be wiser to pursue sub-standards that aids third-party solutions instead.
    
     In the future, we hope that \elq{} may use the aiding sub-standards pushed by RICG, to achieve greater flexibility and performance.
-
-    We hope that the supporting standards of element queries discussed by RICG come soon, so that some of the limitations may be resolved.
     A standardized resize event would enable us to avoid injecting elements, and to reduce the code base of \elq{} significantly.
     Support for custom at-rules/selectors would also enable us to define a more natural API in CSS.
     Finally, being able to tell elements to ignore children while computing their size would decrease the need for cycle detection.
@@ -1031,7 +1031,7 @@
   Extending the CSS syntax violates the requirement of compatability and also introduces a compilation step which decreases the performance \cite{elq-thesis}.
 
   \paragraph{Resize detection}
-  The libraries \cite{eq_imp_eqcss,eq_imp_breakpointsjs,eq_imp_mediaclass,eq_imp_elementquery,eq_imp_responsive-elements,eq_imp_sickles,eq_imp_responsive-elements-2,eq_imp_breaks2000,eq_imp_eqjs} simply observe the \gls{viewport} resize event, which may be enough for static pages, but not enough to satisfy the requirements of reusable responsive modules.
+  The libraries \cite{eq_imp_eqcss,eq_imp_breakpointsjs,eq_imp_mediaclass,eq_imp_elementquery,eq_imp_responsive-elements,eq_imp_sickles,eq_imp_responsive-elements-2,eq_imp_breaks2000,eq_imp_eqjs} simply observe the \gls{viewport} resize event, which may be enough for static pages, but not enough to satisfy the requirements of reusable responsive modules \cite{elq-thesis}.
   Approach \cite{eq_imp_classquery} does not detect resize events at all.
   Like \elq{}, \cite{eq_imp_localised-css,eq_imp_selector_queries,eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} observe \emph{elements} for resize events.
   The libraries \cite{eq_imp_localised-css,eq_imp_selector_queries} use polling while \elq{} and \cite{eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} use different injection approaches, as described in Section~\ref{sec:imp_erd}.
@@ -1067,16 +1067,16 @@
 
   Using a case study based on the popular Bootstrap framework we show that large code bases using media queries can be converted to using \elq{}'s element queries with little effort.
   Changing only about 0.6\% of the LOC of style related code was sufficient to enable the use of Bootstrap in responsive modules.
-  We also report on first commercial users of \elq{}.
+  We also report on first commercial usage of \elq{}.
   
-  We believe \elq{} is an important contribution to realizing a \emph{modular} form of element queries, in particular since standardization bodies like the RICG do not intend to standardize a complete solution.
+  We believe \elq{} is an important contribution to realizing a modular form of element queries, in particular since standardization bodies like the RICG do not intend to standardize a complete solution.
   In the future we intend to improve \elq{} by using forthcoming standards developed by the RICG to avoid some current limitations.
 
 %\end{document}  % This is where a 'short' article might terminate
 
 %ACKNOWLEDGMENTS are optional
 \section{Acknowledgments}
-The authors would like to thank EVRY for sponsoring the \elq{} project, and the supporting projects for element resize detection and batch processing.
+The authors would like to thank EVRY for sponsoring the \elq{} project including the supporting projects for element resize detection and batch processing.
 
 %
 % The following two commands are all you need in the
