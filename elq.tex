@@ -492,10 +492,10 @@
   \begin{enumerate}
     \item Initialize the element by installing properties and a system that handles listeners.
     \item 
-          Call the \code{getElements} method of all plugins o retrieve any additional elements to activate.
+          Call the \code{getElements} method of all plugins to retrieve any additional elements to activate.
           Perform an activation flow for all additonal elements.
-    \item Call the \code{activate} method of all plugins so that plugin-specific initialization may occur.
-    \item If any plugin has requested \elq{} to detect resize events of the element, install an resize detector to the element.
+    \item Call the \code{activate} method of all plugins, so that plugin-specific initialization may occur.
+    \item If any plugin has requested \elq{} to detect resize events of the element, install a resize detector to the element.
     \item Pass the element through the update flow.
   \end{enumerate}
 
@@ -520,10 +520,10 @@
   It is also possible for plugins to define own behavior properties for inter-plugin collaboration, or for storing plugin-specifc element state.
   Examples of behavior properties of the \elq{} core are:
   \begin{itemize}
-    \item \code{resizeDetection} Tells if resize detection should be performed.
-    \item \code{cycleDetection} Tells if cycle detection should be performed.
-    \item \code{updateBreakpoints} Tells if the element should be passed through the update flow.
-    \item \code{applyBreakpointStates} Tells plugins may apply breakpoint states of the element (it is needed fore some elements to only emit element breakpoint states changes, without applying them to the actual element \cite{elq-thesis}).
+    \item \code{resizeDetection} Indicates if resize detection should be performed.
+    \item \code{cycleDetection} Indicates if cycle detection should be performed.
+    \item \code{updateBreakpoints} Indicates if the element should be passed through the update flow.
+    \item \code{applyBreakpointStates} Indicates that plugins may apply breakpoint states of the element (for some elements it is only necessary to emit element breakpoint state changes, without applying them to the actual element~\cite{elq-thesis}).
   \end{itemize}
 
   \subsection{Example Plugin Implementation}
@@ -559,11 +559,11 @@
       };
     \end{lstlisting}
 
-    In the \code{activate} method the plugin registers that resize detection is needed for the element and that is should be passed through the update flow.
-    It also enables the element to have its breakpoint states applied and have cycle detection being performed.
+    In the \code{activate} method the plugin registers that resize detection is needed for the element and that it should be passed through the update flow.
+    It also enables the application of breakpoint states and run-time cycle detection.
     Although not shown in the simplifed implementation, \code{applyBreakpointStates} and \code{cycleDetection} are in some cases disabled.
 
-    The plugin that applies the element breakpoint states simply implements the \code{applyBreakpointStates} method to alter the \code{className} property of the element by the given element breakpoint states.
+    The plugin that applies the element breakpoint states simply implements the \code{applyBreakpointStates} method to alter the \code{className} property of the element using the given element breakpoint states.
 
 \section{Implementation}\label{sec:imp}
   \subsection{Batch Processing}\label{sec:imp_batch_processor}
