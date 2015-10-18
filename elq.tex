@@ -297,7 +297,7 @@
       </div>
     \end{lstlisting}
 
-    When \elq{} has processed the element it will have two classes that reflects each breakpoint state.
+    When \elq{} has processed the element it will have two classes that reflect each breakpoint state.
     For instance, if the element is 400 pixels wide, the element has the two classes \code{elq-min-width-300px} and \code{elq-max-width-500px}.
     Similarly, if the element is 200 pixels wide the classes are instead \code{elq-max-width-300px} and \code{elq-max-width-500px}.
     So for each breakpoint only the min/max part changes.
@@ -305,7 +305,7 @@
     This is because we have taken a user-centric approach so that the CSS usage of the classes is similar to the API of media queries.
     However, developers are free to change this API by creating plugins.
 
-    Now that we have defined the breakpoints of the element, we can conditionally style it in CSS by using the classes as shown in listing~\ref{code:elq-breakpoints-example-css}.
+    Now that we have defined the breakpoints of the element, we can conditionally style it in CSS by using the classes as shown in listing~\ref{code:elq-breakpoints-example-css}.\newpage
 
     \begin{lstlisting}[gobble=6,caption={Example usage of the breakpoint state classes in CSS.},captionpos=b,label={code:elq-breakpoints-example-css}]]
       .foo.elq-max-width-300px {
@@ -340,17 +340,17 @@
 
     \end{lstlisting}
 
-    In this example we create an \elq{} instance and register two plugins to it.
+    In this example we create an \elq{} instance and register two plugins with it.
     Then we query the document for all elements with an \code{elq} attribute (as annotated in the previous example) and then pass them as an argument to the activation method of \elq{}.
-    It should be noted that it is up developers how to activate elements; annotating elements with \code{elq} is used for simplicity in the example.
-    The only requirement is that they in some way is passed through the activation method at some point.
-    This can for example also be achieved with a plugin that listens to DOM mutations to perform the activation automatically, or a plugin that parses CSS and activates all elements that has any conditional styles defined.
+    It should be noted that it is up to developers how to activate elements; annotating elements with \code{elq} is used for simplicity in the example.
+    The only requirement is that conditionally-styled elements are processed by the \code{activate} method at some point.
+    This can, for example, also be achieved with a plugin that listens to DOM mutations to perform the activation automatically, or a plugin that parses CSS and activates all elements that have conditional styles defined.
 
     \subsubsection{Nested modules}
       The \code{elq-breakpoints} API is sufficient for applications that do not need nested breakpoint elements, and similar features are provided by related libraries such as \cite{eq_imp_eqjs,eq_imp_responsive-elements-2}.
-      However, using such API in responsive modules still limits the composability since the modules then may not exist in an outer responsive context.
+      However, using such an API in responsive modules still limits composability, since modules then may not exist in an outer responsive context.
 
-      The reason this API is not sufficient for nested modules is because there is no way to limit the CSS matching search of the selectors.
+      The reason this API is not sufficient for nested modules is that there is no way to limit the CSS matching search of the selectors.
       The last style rule of the example given in listing~\ref{code:elq-breakpoints-example-css} specifies that all paragraph elements should have white text if \emph{any} ancestor breakpoints element is wider than 500 pixels.
       Since the ancestor selector may match elements outside of the module, such selectors are dangerous to use in the context of responsive modules.
       The problem may be somewhat reduced by more specific selectors and such, but it cannot be fully solved for arbitrary styling \cite{elq-thesis}.
@@ -374,7 +374,7 @@
         </div>
       \end{lstlisting}
 
-      In this example, the paragraph elements always have the same element breakpoint classes as the parent parent \code{elq-breakpoints} elements.
+      In this example, the paragraph elements always have the same element breakpoint classes as the parent \code{elq-breakpoints} elements.
       This enables us to write CSS that does not traverse the ancestor tree:
 
       \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={code:elq-mirror-example-css}]]
@@ -389,8 +389,7 @@
         }
       \end{lstlisting}
 
-      Since we in the examples given so far have annotated elements breakpoints manually, the power and flexibility of the API have not been properly displayed.
-      In the next Section, we present an API that combines JavaScript and generated CSS in order to create a flexible grid API.
+      In the examples we have given so far we have annotated element breakpoints manually; however, this does not properly show the power and flexibility of \elq{}'s API. Therefore, the next section presents an API that combines JavaScript and generated CSS in order to create a flexible grid API.
 
     \subsubsection{A grid API}
       In this section we present a plugin that defines an API that enables developers to use responsive grids consisting of twelve columns and utility classes very similar to the ones defined by the CSS Bootstrap framework \cite{bootstrap}.
@@ -425,15 +424,15 @@
       The example grid is defined to be single columned when the width of the grid is below 500 pixels, triple columned when the width is between 500 and 700 pixels, and double columned for when the width is above 700 pixels.
       The last column is hidden when the width is above 700 pixels.
 
-      The column classes defines the behaviour of the grid, and has the syntax \code{col-[breakpoint]-[size]}.
-      The \code{[breakpoint]} part of the column class is relative to the parent \code{row} and can be any positive number including an optional unit.
+      The column classes define the behaviour of the grid, and have the syntax \code{col-[breakpoint]-[size]}.
+      The \code{[breakpoint]} part of a column class is relative to the parent \code{row} and can be any positive number including an optional unit.
       Currently, the supported units are \code{px, em, rem}.
       If the unit is omitted, \code{px} is assumed.
       Grids may also be nested.
 
       The plugin traverses the grid structure to initialize all columns and possible nested grids.
       It also generates and applies the CSS needed for each column breakpoint automatically to the document.
-      This enables developers with ease to responsive grids by pixel precision in nestable modules.
+      This enables developers to easily create responsive grids in nestable modules.
 
 \section{Extensions via plugins}\label{sec:plugins}
   For example, if annotating HTML is undesired it is possible to create a plugin that instead generates element breakpoints by parsing CSS.
