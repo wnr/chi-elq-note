@@ -837,11 +837,6 @@
     It achieves a 37-fold speedup compared to the object-based approach and a 17-fold speedup compared to the scroll-based approach when preparing 700 elements for resize detection.
     It also performs well when detecting resize events, which it does with a delay of 25 ms for 100 elements.
 
-    \elq{} uses the object-based approach as a fallback for legacy browsers.
-    Therefore the performance of the \elq{} resize detection system is at minimum as performant as related approaches.
-    See table~\ref{table:erd-layout-engines} for the performance of \elq{}'s two resize detection strategies in different browsers.
-    As shown in the table, the scroll-based approach is suitable for reduced page load, but may in some cases be preferred for better resize detection performance.
-
     \begin{table}[ht]\center
       \tiny
       \begin{tabular}[t]{ l l l l l l l }
@@ -858,6 +853,11 @@
       \caption{Performance of \elq{}'s two resize detection strategies, operating on 100 elements.}
       \label{table:erd-layout-engines}
     \end{table}
+
+    \elq{} uses the object-based approach as a fallback for legacy browsers.
+    Therefore the performance of the \elq{} resize detection system is at minimum as performant as related approaches.
+    See table~\ref{table:erd-layout-engines} for the performance of \elq{}'s two resize detection strategies in different browsers.
+    As shown in the table, the scroll-based approach is suitable for reduced page load, but may in some cases be preferred for better resize detection performance.
 
     % \paragraph{Firefox and Safari}
     % As shown, great performance can be achieved with the optimized \elq{} scroll-based solution in Chrome.
@@ -1079,6 +1079,7 @@
 %\end{document}  % This is where a 'short' article might terminate
 
 %ACKNOWLEDGMENTS are optional
+\newpage
 \section{Acknowledgments}
 The authors would like to thank EVRY for sponsoring the \elq{} project including the supporting projects for element resize detection and batch processing.
 
