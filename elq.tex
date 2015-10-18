@@ -226,6 +226,7 @@
       The W3C has discussed such a feature under the name of \emph{element queries} given its analogy to media queries~\cite{w3c_eq_mail}.
       This paper presents a novel implementation of element queries in JavaScript named \elq{} that enables new possibilities of RWD.
       Our approach satisfies all requirements given in Section~\ref{sec:reqs}.
+      We have released ELQ as an open-source library under the MIT license.\footnote{\url{https://github.com/elqteam/elq}}
       The implementation supports all major browsers, including Internet Explorer version 8, Chrome version 42 (the last version compatible with Android version 4), Safari version 5, and Opera version 12.
 
       One could argue that a solution does not need to be executed on the client side, but instead generate media queries on the server side for all modules with respect to the current application layout.
@@ -306,7 +307,7 @@
     This is because we have taken a user-centric approach so that the CSS usage of the classes is similar to the API of media queries.
     However, developers are free to change this API by creating plugins.
 
-    Now that we have defined the breakpoints of the element, we can conditionally style it in CSS by using the classes as shown in listing~\ref{code:elq-breakpoints-example-css}.\newpage
+    Now that we have defined the breakpoints of the element, we can conditionally style it in CSS by using the classes as shown in listing~\ref{code:elq-breakpoints-example-css}.
 
     \begin{lstlisting}[gobble=6,caption={Example usage of the breakpoint state classes in CSS.},captionpos=b,label={code:elq-breakpoints-example-css}]]
       .foo.elq-max-width-300px {
@@ -907,7 +908,6 @@
     According to this design, we convert all responsive elements of Bootstrap to \code{elq-mirror} elements, since they need to mirror the breakpoints of the nearest ancestor \code{elq-breakpoints} element.
     Since container elements may be nested, they have both the \code{elq-breakpoints} and \code{elq-mirror} behavior.
 
-    \newpage
     The breakpoints of Bootstrap are defined as the following constants:\footnote{The Bootstrap CSS is generated using the LESS preprocessor~\cite{lesscss} whose syntax we use.}
     \begin{lstlisting}[gobble=6,label={code:bootstrap-less-breakpoints},caption={},captionpos=b]]
       @screen-sm-min: 480px;
