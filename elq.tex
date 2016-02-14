@@ -85,7 +85,7 @@
   Responsive Web Design (RWD) enables web applications to adapt to the characteristics of different devices such as screen size which is important for mobile browsing.
   Today, the only W3C standard to support this adaptability is CSS media queries.
   However, using media queries it is impossible to create applications in a modular way, because responsive elements then always depend on the global context.
-  Hence, responsive elements can only be reused if the global context is exactly the same, severely limiting their reusability.
+  Hence, responsive elements can only be reused if the global context is exactly the same.
   This makes it extremely challenging to develop large responsive applications, because the lack of true modularity makes certain requirement changes either impossible or expensive to realize.
 
   In this paper we extend RWD to also include responsive modules, i.e., modules that adapt their design based on their local context independently of the global context.
@@ -102,18 +102,17 @@
 \section{Introduction}
   Responsive Web Design (RWD) is an approach to make an application respond to the viewport size and device characteristics.
   This is currently achieved by using CSS media queries that are designed to conditionally design content by the media, such as using serif fonts when printed and sans-serif when viewed on a screen \cite{w3c_css_mq}.
-
   In order to reduce complexity and enable reusability, applications are typically composed of modules, i.e., interchangeable and independent parts that have a single and well-defined responsibility \cite{parnas1972criteria}.
   In order for a module to be reusable it must not assume in which context it is being used.
 
   In this paper we focus on the presentation layer of web applications.
   As it stands, using media queries to make the presentation layer responsive precludes modularity.
-  The problem is that there is no way to make a module responsive without making it context-aware, due to the fact that media queries can only target the viewport; this means that responsive elements can only respond to changes of the (global) viewport.
+  The problem is that there is no way to make a module responsive without making it context-aware, due to the fact that media queries can only target the viewport; this means that responsive modules can only respond to changes of the (global) viewport.
   Thus, a responsive module using media queries is layout dependent and has both reduced functionality and limited reusability~\cite{elq-thesis}.
   As a result, media queries can only be used for RWD of non-modular static applications.
-  In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application becomes a cumbersome task.
+  In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application becomes a cumbersome task since it may require many responsive modules to be updated.
 
-  \paragraph{The Problem Exemplified}
+  \paragraph{The Problem Exemplified.}
     Imagine an application that displays the current weather of various cities as widgets, by using a weather widget module.
     The module should be responsive so that more information, such as a temperature graph over time, is displayed when the widget is big.
     When the widget is small it should only display the current temperature.
@@ -184,13 +183,14 @@
   The rest of the paper is organized as follows.
   Section~\ref{sec:elq} introduces \elq{} and its API from a user's perspective.
   In Section~\ref{sec:plugins} we introduce \elq{}'s plugin architecture.
-  Section~\ref{sec:imp} provides an overview of \elq{}'s implementation.
+  Section~\ref{sec:imp} provides an overview of the implementation of \elq{}'s element resize detection system.
   In Section~\ref{sec:eval} we evaluate the performance of \elq{} and report on case studies.
   Section~\ref{sec:discussion} discusses limitations of \elq{} and related libraries, as well as the current state of standardization of element queries.
   Section~\ref{sec:related} relates \elq{} to prior work, and Section~\ref{sec:conclusion} concludes.
 
 
 \section{Overview of \elq{}}\label{sec:elq}\label{sec:elq-api}
+  % TODO: Write about px, em, rem somewhere in this section.
   Media queries and element queries are similar in the sense that they both enable developers to define conditional designs that are applied by specified criteria.
   The main difference is the type of criteria that can be used.
   With media queries critera of the device, document, and media are used, while element criteria are used with element queries.
@@ -212,7 +212,7 @@
   The cycle detection system is implemented as an conservative algorithm, and may in some cases detect false positives.
 
   \paragraph{The default breakpoints API.}
-    In this section, we use the \code{elq-breakpoints} API (that is bundled with \elq{} as default) that let use define element breakpoints.
+    In this section, we use the \code{elq-breakpoints} plugin API (that is bundled with \elq{} as default) that let us define element breakpoints.
     The main idea is to define element breakpoints of interest so that children can be conditionally styled in CSS by targeting the different element breakpoint states.
     As CSS3 does not support custom at-rules/selectors \cite{w3c_css_selectors}, responsive elements are annotated in HTML by element attributes.
     \elq{} then observes the annotated elements in order to automatically update breakpoint state classes.
@@ -233,7 +233,7 @@
     So for each breakpoint only the min/max part changes.
     It may seem alien that the classes describe that the width of the element is both maximum 300 and 500 pixels.
     This is because we have taken a user-centric approach so that the CSS usage of the classes is similar to the API of media queries.
-    However, developers are free to change this API by creating plugins.
+    However, developers may use other plugins if this API is undesired.
 
     Now that we have defined the breakpoints of the element, we can conditionally style it in CSS by using the classes as shown in listing~\ref{code:elq-breakpoints-example-css}.
 
@@ -249,9 +249,10 @@
     The following is an example of how to create an \elq{} instance and activating elements:
 
     \begin{lstlisting}[gobble=6,caption={}]]
-      var elq = Elq();         // Create an ELQ instance
-      elq.use(myPlugin);       // Registering a plugin
-      elq.activate(elements);  // Activate given elements
+      var elq = Elq();
+      elq.use(myPlugin);
+      var elements = document.querySelectorAll("[elq]");
+      elq.activate(elements);
     \end{lstlisting}
 
     \noindent
@@ -264,7 +265,6 @@
     \paragraph{Nested modules.}
       The \code{elq-breakpoints} API is sufficient for applications that do not need nested breakpoint elements, and similar features are provided by related libraries such as \cite{eq_imp_eqjs,eq_imp_responsive-elements-2}.
       However, using such an API in responsive modules still limits composability, since modules then may not exist in an outer responsive context.
-
       The reason this API is not sufficient for nested modules is that there is no way to limit the CSS matching search of the selectors.
       The last style rule of the example given in listing~\ref{code:elq-breakpoints-example-css} specifies that all paragraph elements should have white text if \emph{any} ancestor breakpoints element is wider than 500 pixels.
       Since the ancestor selector may match elements outside of the module, such selectors are dangerous to use in the context of responsive modules.
@@ -297,9 +297,9 @@
       In Appendix~\ref{grid-api} we show an example plugin that provides a grid API similar to the CSS Bootstrap framework.
 
 \section{Extensions via plugins}\label{sec:plugins}
+  % TODO: Intro?
   For example, if annotating HTML is undesired it is possible to create a plugin that instead generates element breakpoints by parsing CSS.
   Likewise, if adding breakpoint state classes to elements is undesired it is possible to create a plugin that does something else when an element breakpoint state has changed.
-
   A plugin is defined by a \emph{plugin definition object} and has the structure shown in listing~\ref{code:elq-plugin-definition}.
   \begin{lstlisting}[gobble=4,caption={The structure of plugin definition objects.},captionpos=b,label={code:elq-plugin-definition}]]
     var myPluginDefinition = {
@@ -321,11 +321,11 @@
     };
   \end{lstlisting}
 
+  \noindent
   All of the methods are invoked when registered to an \elq{} instance.
   The \code{getName} and \code{getVersion} methods tells the name and version of the plugin.
   The \code{isCompatible} tells if the plugin is compatible with the \elq{} instance that it is registered to.
   In the \code{make} method the plugin may initialize itself to the \elq{} instance and return an object that defines the plugin API accessible by \elq{} and other plugins.
-
   \elq{} invokes certain methods of the plugin API, if implemented, to let plugins decide the behavior of the system.
   Those methods are the following:
   \begin{itemize}
@@ -339,6 +339,7 @@
           Called to apply the given element breakpoint states of an element.
   \end{itemize}
 
+  \noindent
   In addition, plugins may also listen to the following \elq{} events:
   \begin{itemize}
     \item \code{resize(element)}
@@ -347,6 +348,7 @@
           Emitted when an element has changed element breakpoint states (e.g., when the width of an element changed from being narrower to being wider than a breakpoint).
   \end{itemize}
 
+  \noindent
   There are two main flows of the \elq{} system; activating an element and updating an element.
   When \elq{} is requested to activate an element, the following flow occurs:
 
@@ -360,6 +362,7 @@
     \item Pass the element through the update flow.
   \end{enumerate}
 
+  \noindent
   The update flow is as follows:
   \begin{enumerate}
     \item Call the \code{getBreakpoints} method of all plugins to retrieve the breakpoints of the element.
@@ -372,6 +375,7 @@
     \end{enumerate}
   \end{enumerate}
 
+  \noindent
   Of course, there are options to disable some of the steps such as cycle detection and applying breakpoint states.
   The update flow is also triggered by element resize events.
 
