@@ -391,62 +391,61 @@
     \item \code{applyBreakpointStates} Indicates that plugins may apply breakpoint states of the element (for some elements it is only necessary to emit element breakpoint state changes, without applying them to the actual element~\cite{elq-thesis}).
   \end{itemize}
 
-\section{Implementation}\label{sec:imp}
-  \subsection{Element Resize Detection}\label{sec:imp_erd}
-    Unfortunately, there is no standardized resize event for arbitrary elements \cite{w3c_dom2_events}.
-    We use a scroll-based approach in order to detect element resize events.
-    It injects multiple overflowing elements that listen to scroll events.
-    The overflowing elements are styled so that \code{scroll} events are emitted when the target element is resized.
-    For detecting when the target element shrinks, two elements are needed; one for handling the scrollbars and one for causing them to scroll.
-    Similarly, for detecting when the target element expands, two elements are needed in the same way.
-    As this solution only injects \code{div} elements, it offers greater opportunities for optimizations.
-    The main algorithm that is performed when an element $e$ is to be observed for resize events is the following:
-    \begin{enumerate}
-      \item\label{itm:erd-algo-original-scroll-1} Get the computed style of $e$.
-      \item\label{itm:erd-algo-original-scroll-2} If the element is positioned (i.e., \code{position} is not \code{static}) the next step is \ref{itm:erd-algo-original-scroll-4}.
-      \item\label{itm:erd-algo-original-scroll-3} Set the position of $e$ to be \code{relative}. Here additional checks can be performed to warn the developer about unwanted side effects of doing this.
-      \item\label{itm:erd-algo-original-scroll-4} Create the four elements needed (two for detecting when $e$ shrinks, and two for detecting when $e$ expands) and attach event handlers for the \code{scroll} event of the elements.
-                                                  When the elements have been styled and configured properly, they are added as children to an additional container element that is injected into $e$.
-      \item\label{itm:erd-algo-original-scroll-5} The current size of $e$ is stored and the scrollbars of the injected elements are positioned correctly.
-      \item\label{itm:erd-algo-original-scroll-6} The algorithm waits for the \code{scroll} event handlers to be called asynchronously by the layout engine (they are called since the previous step repositioned the scrollbars).
-                                                  When the handlers have been called, the injection is finished and observers can be notified on resize events of $e$ when \code{scroll} events occur.
-    \end{enumerate}
+\section{Element resize detection}\label{sec:imp}
+  Unfortunately, there is no standardized resize event for arbitrary elements \cite{w3c_dom2_events}.
+  It is possible to resort to polling the element sizes in order to detect changes, but there are also two event-based approaches to detecting element resize events as originally presented by \cite{backalley}.
+  One is to use \code{object} elements, since frame elements emit resize events \cite{elq-thesis}.
+  See Appendix~\ref{sec:imp_erd} for a more in-depth description of the polling and object-based approaches.
 
-    Layout thrashing can be avoided by using a leveled batch processor (as described in Appendix~\ref{sec:imp_batch_processor}), which results in a significant performance improvement as shown in Section~\ref{sec:eval-perf}.
-    The algorithm steps are batch processed in the following levels:
-    \begin{enumerate}
-      \item\label{itm:erd-algo-scroll-level-1}
-        \textbf{The read level:}
-        Step \ref{itm:erd-algo-original-scroll-1} is performed to obtain all necessary information about $e$.
-        The information is stored in a shared state so that all other steps can obtain the information without reading the DOM.
-      \item\label{itm:erd-algo-scroll-level-2}
-        \textbf{The mutation level:}
-        Steps \ref{itm:erd-algo-original-scroll-2}, \ref{itm:erd-algo-original-scroll-3} and \ref{itm:erd-algo-original-scroll-4} are performed, which mutate the DOM.
-        All mutations performed in this level can be queued by layout engines.
-      \item\label{itm:erd-algo-scroll-level-3}
-        \textbf{The forced layout level:}
-        Step \ref{itm:erd-algo-original-scroll-5} is performed, which forces the some layout engines to perform a layout.
-    \end{enumerate}
+  It is also possible to use multiple overflowing elements that listen to scroll events in order ot detect size changes, which is the approach of \elq{}.
+  The overflowing elements are styled so that scroll events are emitted when the target element is resized.
+  For detecting when the target element shrinks, two elements are needed; one for handling the scrollbars and one for causing them to scroll.
+  Similarly, for detecting when the target element expands, two elements are needed in the same way.
+  As this approach only injects \code{div} elements, it offers greater opportunities for optimizations than the other approaches.
+  The main algorithm that is performed when an element $e$ is to be observed for resize events is the following:
+  \begin{enumerate}
+    \item\label{itm:erd-algo-original-scroll-1} Get the computed style of $e$.
+    \item\label{itm:erd-algo-original-scroll-2} If the element is positioned (i.e., \code{position} is not \code{static}) the next step is \ref{itm:erd-algo-original-scroll-4}.
+    \item\label{itm:erd-algo-original-scroll-3} Set the position of $e$ to be \code{relative}. Here additional checks can be performed to warn the developer about unwanted side effects of doing this.
+    \item\label{itm:erd-algo-original-scroll-4} Create the four elements needed (two for detecting when $e$ shrinks, and two for detecting when $e$ expands) and attach event handlers for the scroll event of the elements.
+                                                When the elements have been styled and configured properly, they are added as children to an additional container element that is injected into $e$.
+    \item\label{itm:erd-algo-original-scroll-5} The current size of $e$ is stored and the scrollbars of the injected elements are positioned correctly.
+    \item\label{itm:erd-algo-original-scroll-6} The algorithm waits for the \code{scroll} event handlers to be called asynchronously by the layout engine (they are called since the previous step repositioned the scrollbars).
+                                                When the handlers have been called, the injection is finished and observers can be notified on resize events of $e$ when scroll events occur.
+  \end{enumerate}
 
-    Since repositioning a scrollbar in some layout engines forces a layout, such operations need to be performed after that all other queueable operations have been executed.
-    Therefore, step~\ref{itm:erd-algo-original-scroll-5} is performed in level~\ref{itm:erd-algo-scroll-level-3} as the last step.
-    Even though some layout engines are unable to queue the repositing of scrollbars, it is still beneficial to batch process the algorithm since only pure layouts need to be performed (instead of having to recompute styles and synchronize the DOM and render trees before each layout).
-    As step~\ref{itm:erd-algo-original-scroll-6} is performed by the layout engine asynchronously and does not interact with the DOM, it does not need to be batch processed.
+  \noindent
+  Layout thrashing can be avoided by using a leveled batch processor (as described in Appendix~\ref{sec:imp_batch_processor}), which results in a significant performance improvement as shown in Section~\ref{sec:eval-perf}.
+  The algorithm steps are batch processed in the following levels:
+  \begin{enumerate}
+    \item\label{itm:erd-algo-scroll-level-1}
+      \textbf{The read level:}
+      Step \ref{itm:erd-algo-original-scroll-1} is performed to obtain all necessary information about $e$.
+      The information is stored in a shared state so that all other steps can obtain the information without reading the DOM.
+    \item\label{itm:erd-algo-scroll-level-2}
+      \textbf{The mutation level:}
+      Steps \ref{itm:erd-algo-original-scroll-2}, \ref{itm:erd-algo-original-scroll-3} and \ref{itm:erd-algo-original-scroll-4} are performed, which mutate the DOM.
+      All mutations performed in this level can be queued by layout engines.
+    \item\label{itm:erd-algo-scroll-level-3}
+      \textbf{The forced layout level:}
+      Step \ref{itm:erd-algo-original-scroll-5} is performed, which forces the some layout engines to perform a layout.
+  \end{enumerate}
+
+  \noindent
+  Since repositioning a scrollbar in some layout engines forces a layout, such operations need to be performed after that all other queueable operations have been executed.
+  Therefore, step~\ref{itm:erd-algo-original-scroll-5} is performed in level~\ref{itm:erd-algo-scroll-level-3} as the last step.
+  Even though some layout engines are unable to queue the repositing of scrollbars, it is still beneficial to batch process the algorithm since only pure layouts need to be performed (instead of having to recompute styles, and synchronize the DOM and render trees before each layout).
+  As step~\ref{itm:erd-algo-original-scroll-6} is performed by the layout engine asynchronously and does not interact with the DOM, it does not need to be batch processed.
+
+  % TODO: Write about animation event that detects when elements are rendered/attached, if there is room.
 
 \section{Empirical evaluation}\label{sec:eval}
   \subsection{Performance}\label{sec:eval-perf}
     Only the performance of the element resize detection system has been performed.
-    This due to the fact that detecting element resize events entails the significant performance penalties of the library.
+    This due to the fact that detecting element resize events entails the significant performance penalties of \elq{}.
     Also, it is hard to compare performance results of related libraries since the functionality is different.
     Fortunately, element resize detection is the common denominator of all automatic libraries and the results of this system can be compared faithfully.
     Measurements and graphs show evaluations performed in Chrome version 42 unless stated otherwise.
-
-    The object-based approach (as presented by \cite{backalley}) performs well when detecting resize events, which it does with a delay of 30 ms for 100 elements.
-    However, the injection performance is not great as presented in figure~\ref{fig:erd-original-object}.
-    As shown by the graph, the injection can be performed with adequate performance as long as the number of elements is low.
-    The approach does not scale well as the number of elements increases.
-    This is probably due to the fact that the heap memory usage grows roughly by 0.55 MB per element.
-
     \begin{figure}[h]
       \tiny
       \begin{center}
@@ -472,6 +471,13 @@
       \label{fig:erd-original-object}
       \end{center}
     \end{figure}
+    % \vspace{-0.5cm}
+    \newline\indent
+    The object-based approach (as presented by \cite{backalley}) performs well when detecting resize events, which it does with a delay of 30 ms for 100 elements.
+    However, the injection performance is not great as presented in figure~\ref{fig:erd-original-object}.
+    As shown by the graph, the injection can be performed with adequate performance as long as the number of elements is low.
+    The approach does not scale well as the number of elements increases.
+    This is probably due to the fact that the heap memory usage grows roughly by 0.55 MB per element.
 
     \begin{figure*}[h]
       \tiny
@@ -495,7 +501,7 @@
                   legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
                 ]
                 \addplot+[blue, mark=diamond*, mark options={blue}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-elq.csv};
-                \addlegendentry{ELQ scroll-based solution}
+                \addlegendentry{ELQ scroll-based approach}
               \end{axis}
             \end{tikzpicture}
         \end{minipage}%
@@ -518,9 +524,9 @@
               \addplot[dashed,red,domain=1:1500,samples=100] {5.567042796*10^(-6)*x^2 + 4.680174396*10^(-3)*x + 6.495754669*10^(-3)};
               \addplot[dashed,orange,domain=1:1500,samples=100] {4.533208873*10^(-6)*x^2 + 6.320377596*10^(-4)*x + 2.289566005*10^(-2)};
               \addplot[dashed,blue,domain=1:1500,samples=100] {4.071740702*10^(-8)*x^2 + 1.823749404*10^(-4)*x + 1.527042267*10^(-2)};
-              \addlegendentry{Object-based solution}
-              \addlegendentry{Scroll-based solution}
-              \addlegendentry{ELQ scroll-based solution}
+              \addlegendentry{Object-based approach}
+              \addlegendentry{Scroll-based approach}
+              \addlegendentry{ELQ scroll-based approach}
             \end{axis}
           \end{tikzpicture}
         \end{minipage}
@@ -529,13 +535,19 @@
       \end{center}
     \end{figure*}
 
+    \noindent
     As the scroll-based approach (as presented by \cite{backalley}) does not inject \code{object} elements the memory footprint is reduced significantly, which improves the injection performance.
     The amount of used memory is too low for reliable measurements.
     See figure~\ref{fig:erd-elq-scroll} for graphs that show how the \elq{} scroll-based approach performs compared to the other two approaches.
     As evident in the figure, the optimized \elq{} approach has significantly reduced injection times.
     It achieves a 37-fold speedup compared to the object-based approach and a 17-fold speedup compared to the scroll-based approach when preparing 700 elements for resize detection.
     It also performs well when detecting resize events, which it does with a delay of 25 ms for 100 elements.
+    \newline\indent
+    \elq{} uses the object-based approach as a fallback for legacy browsers.
+    Therefore the performance of the \elq{} resize detection system is at minimum as performant as related approaches.
+    See table~\ref{table:erd-layout-engines} for the performance of \elq{}'s two resize detection strategies in different browsers.
 
+    %\vspace{-0.5cm}
     \begin{table}[ht]\center
       \tiny
       \begin{tabular}[t]{ l l l l l l l }
@@ -550,15 +562,10 @@
         Android v. 5 Chrome v. 39   & 40 ms   & 1000 ms  & 20 ms     & 10 ms  \\
       \end{tabular}
       \vspace{.5cm}
-      \caption{Performance of \elq{}'s two resize detection strategies, operating on 100 elements.}
+      \caption{Performance of the two resize detection strategies, operating on 100 elements.}
       \label{table:erd-layout-engines}
     \end{table}
-
-    \elq{} uses the object-based approach as a fallback for legacy browsers.
-    Therefore the performance of the \elq{} resize detection system is at minimum as performant as related approaches.
-    See table~\ref{table:erd-layout-engines} for the performance of \elq{}'s two resize detection strategies in different browsers.
-    As shown in the table, the scroll-based approach is suitable for reduced page load, but may in some cases be preferred for better resize detection performance.
-
+    \vspace{-1cm}
   \subsection{Case studies}
     In this section we aim to provide answers to the following questions:
     \begin{itemize}
@@ -566,26 +573,27 @@
       \item How much effort is this modularization?
     \end{itemize}
 
-    In order to answer the questions, we have adapted the popular Bootstrap framework (version 3.3.2) to use element queries instead of media queries.
+    \noindent
+    In order to answer the questions, we have adapted the popular Bootstrap framework (version 3) to use element queries instead of media queries.
     According to its website, ``Bootstrap is the most popular HTML, CSS, and JS framework for developing responsive, mobile first projects on the web.''~\cite{bootstrap}
 
-    In order to modularize Bootstrap, we redefine the behavior of its responsive elements so that they no longer respond to the viewport but to enclosing container elements.
+    To modularize Bootstrap, we redefine the behavior of its responsive elements so that they no longer respond to the viewport but to enclosing container elements.
     The following observation guides our modularization: all responsive elements should respond to their closest enclosing \code{container} or \code{container-fluid} element.
     Both classes are used in Bootstrap to define new parts of a page (e.g., a grid is required to have a container ancestor).
     We also enable them to be nestable, which is important to satisfy the requirement of composable modules.
-    The breakpoints of the container elements are defined using the \code{elq-breakpoints} API (see Section~\ref{sec:elq-api}).
-    Since the Bootstrap API uses a predefined set of breakpoints, they are all added to the container elements with JavaScript.
-
+    The breakpoints of the container elements are defined using the \code{elq-breakpoints} API.
+    Since the Bootstrap API uses a predefined set of breakpoints, they are all added to the container elements dynamically with JavaScript.
     According to this design, we convert all responsive elements of Bootstrap to \code{elq-mirror} elements, since they need to mirror the breakpoints of the nearest ancestor \code{elq-breakpoints} element.
     Since container elements may be nested, they have both the \code{elq-breakpoints} and \code{elq-mirror} behavior.
 
-    The breakpoints of Bootstrap are defined as the following constants:\footnote{The Bootstrap CSS is generated using the LESS preprocessor~\cite{lesscss} whose syntax we use.}
+    The breakpoints of Bootstrap are defined as the following constants:\footnote{The Bootstrap CSS is generated using the LESS preprocessor~\cite{lesscss}.}
     \begin{lstlisting}[gobble=6,label={code:bootstrap-less-breakpoints},caption={},captionpos=b]]
       @screen-sm-min: 480px;
       @screen-md-min: 992px;
       @screen-lg-min: 1200px;
     \end{lstlisting}
 
+    \noindent
     The following example shows how Bootstrap's style definitions are changed from using media queries to using \elq{}'s element queries:
     \begin{lstlisting}[gobble=6,label={code:bootstrap-less-breakpoints-usage},caption={},captionpos=b]]
       /* File "less/grid.less" of Bootstrap. */
@@ -607,6 +615,7 @@
       }
     \end{lstlisting}
 
+    \noindent
     By using the power of preprocessors, \elq{} element queries become as pleasant to work with as media queries.
     In fact, only about 0.6\% of the style code (LESS syntax) need to be altered.
     Most changes are similar to the one shown above, which replaces the media query syntax with the \elq{} element queries syntax.
@@ -619,42 +628,14 @@
     In addition to the Bootstrap case study, we have been gathering experience with the application of \elq{} in large financial applications at EVRY.
     Our practical experience shows that complex applications require a variety of features to be supported by element queries.
     Such features can be provided effectively by \elq{} plugins.
-
-    \begin{table*}[ht!]\center
-      \tiny
-      \begin{tabular}[t]{ p{3cm} l l l l l }
-        Implementation & Syntax & Resize detection & Page dynamism  & Composability & Cycle detection \\
-        \hline
-         MagicHTML \cite{eq_imp_magichtml}                          &                       Custom CSS  &   - &                             Static &     -                  & -  \\
-         EQCSS \cite{eq_imp_eqcss}                                  &                       Custom CSS  &   Viewport only &                 Dynamic &    Full support       & -  \\
-         Element Media Queries \cite{eq_imp_prollyfill-min-width}   &                       Custom CSS  &   Non-void elements &             Dynamic &    -                  & -  \\
-         Localised CSS \cite{eq_imp_localised-css}                  &                       Custom CSS  &   Arbitrary elements &            Dynamic &    -                  & -  \\
-         Grid Style Sheets 2.0 \cite{eq_imp_gss}                    &                       Custom CSS  &   Arbitrary elements &            Dynamic &    Partial support    & -  \\
-         Class Query \cite{eq_imp_classquery}                       &                                 - &   - &                             Static &     -                  & -  \\
-         breakpoints.js \cite{eq_imp_breakpointsjs}                 &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
-         MediaClass \cite{eq_imp_mediaclass}                        &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
-         ElementQuery \cite{eq_imp_elementquery}                    &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
-         Responsive Elements \cite{eq_imp_responsive-elements}      &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
-         SickleS \cite{eq_imp_sickles}                              &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
-         Responsive Elements \cite{eq_imp_responsive-elements-2}    &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
-         breaks2000 \cite{eq_imp_breaks2000}                        &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
-         eq.js \cite{eq_imp_eqjs}                                   &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
-         Element Queries \cite{eq_imp_element-queries}              &                                 - &   Non-void elements &             Dynamic &    -                  & -  \\
-         CSS Element Queries \cite{eq_imp_css-element-queries}      &                                 - &   Non-void elements &             Dynamic &    -                  & -  \\
-         Selector queries and responsive containers \cite{eq_imp_selector_queries}                  & - &   Arbitrary elements &            Dynamic &    -                  & -  \\
-         \elq{}                                                                                     & - &   Non-void elements &             Dynamic &    Full support       & Yes \\
-      \end{tabular}
-      \vspace{.5cm}
-      \caption{Classification of related approaches to modular RWD.}
-      \label{table:approaches-classifications}
-    \end{table*}
+    % TODO: Write about the importance of having a JS API for breakpoints as well (as used in ResponsiveBlock) if there is space.
 
 \section{Discussion}\label{sec:discussion}
   \paragraph{Limitations.}
     Inherent to all current implementations of element queries is that the conditional style is applied ``one layout behind''.
     Since a layout pass needs to have been performed in order for an element to change size, the conditional styles defined by the element queries cannot be applied until next layout.
     Therefore, the element displays an invalid style until another layout has been performed.
-    The flash of invalid design is usually so short that users do not notice it, but in some cases developers need to work around this issue to avoid more apparent results.
+    The flash of invalid design is usually so short that users do not notice it, but in some cases developers need to work around this issue to avoid more apparent results (especially when combined with animations).
     Another caveat is presented by the element resize detection approaches, as they mutate the DOM.
     Developers need to be aware of this as CSS selectors and JavaScript may also match the injected elements.
     This is easily avoided by good practices.
@@ -673,10 +654,40 @@
     A standardized resize event would enable us to avoid injecting elements, and to reduce the code base of \elq{} significantly.
     Support for custom at-rules/selectors would also enable us to define a more natural API in CSS.
     Finally, being able to tell elements to ignore children while computing their size would decrease the need for cycle detection.
+    % TODO: Would also be nice to tell browsers to rendering a layout.
 
 \section{Related Work}\label{sec:related}
   Table~\ref{table:approaches-classifications} attempts to classify all existing approaches, of modular RWD, known to us.
   We discuss these approaches according to two different aspects: (a) syntax extensions and (b) resize detection.
+
+  \begin{table*}[ht!]\center
+    \tiny
+    \begin{tabular}[t]{ p{3cm} l l l l l }
+      Implementation & Syntax & Resize detection & Page dynamism  & Composability & Cycle detection \\
+      \hline
+       MagicHTML \cite{eq_imp_magichtml}                          &                       Custom CSS  &   - &                             Static &     -                  & -  \\
+       EQCSS \cite{eq_imp_eqcss}                                  &                       Custom CSS  &   Viewport only &                 Dynamic &    Full support       & -  \\
+       Element Media Queries \cite{eq_imp_prollyfill-min-width}   &                       Custom CSS  &   Non-void elements &             Dynamic &    -                  & -  \\
+       Localised CSS \cite{eq_imp_localised-css}                  &                       Custom CSS  &   Arbitrary elements &            Dynamic &    -                  & -  \\
+       Grid Style Sheets 2.0 \cite{eq_imp_gss}                    &                       Custom CSS  &   Arbitrary elements &            Dynamic &    Partial support    & -  \\
+       Class Query \cite{eq_imp_classquery}                       &                                 - &   - &                             Static &     -                  & -  \\
+       breakpoints.js \cite{eq_imp_breakpointsjs}                 &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
+       MediaClass \cite{eq_imp_mediaclass}                        &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
+       ElementQuery \cite{eq_imp_elementquery}                    &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
+       Responsive Elements \cite{eq_imp_responsive-elements}      &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
+       SickleS \cite{eq_imp_sickles}                              &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
+       Responsive Elements \cite{eq_imp_responsive-elements-2}    &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
+       breaks2000 \cite{eq_imp_breaks2000}                        &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
+       eq.js \cite{eq_imp_eqjs}                                   &                                 - &   Viewport only &                 Dynamic &    -                  & -  \\
+       Element Queries \cite{eq_imp_element-queries}              &                                 - &   Non-void elements &             Dynamic &    -                  & -  \\
+       CSS Element Queries \cite{eq_imp_css-element-queries}      &                                 - &   Non-void elements &             Dynamic &    -                  & -  \\
+       Selector queries and responsive containers \cite{eq_imp_selector_queries}                  & - &   Arbitrary elements &            Dynamic &    -                  & -  \\
+       \elq{}                                                                                     & - &   Non-void elements &             Dynamic &    Full support       & Yes \\
+    \end{tabular}
+    \vspace{.5cm}
+    \caption{Classification of related approaches to modular RWD.}
+    \label{table:approaches-classifications}
+  \end{table*}
 
   \paragraph{Syntax extensions.}
   The libraries \cite{eq_imp_magichtml,eq_imp_eqcss,eq_imp_prollyfill-min-width,eq_imp_localised-css,eq_imp_gss} have in common that they require developers to write custom CSS, unlike \elq{}.
@@ -690,7 +701,7 @@
   The libraries \cite{eq_imp_eqcss,eq_imp_breakpointsjs,eq_imp_mediaclass,eq_imp_elementquery,eq_imp_responsive-elements,eq_imp_sickles,eq_imp_responsive-elements-2,eq_imp_breaks2000,eq_imp_eqjs} simply observe the viewport resize event, which may be enough for static pages, but not enough to satisfy the requirements of reusable responsive modules \cite{elq-thesis}.
   Approach \cite{eq_imp_classquery} does not detect resize events at all.
   Like \elq{}, \cite{eq_imp_localised-css,eq_imp_selector_queries,eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} observe \emph{elements} for resize events.
-  The libraries \cite{eq_imp_localised-css,eq_imp_selector_queries} use polling while \elq{} and \cite{eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} use different injection approaches, as described in Section~\ref{sec:imp_erd}.
+  The libraries \cite{eq_imp_localised-css,eq_imp_selector_queries} use polling while \elq{} and \cite{eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} use different injection approaches.
   As shown in Section~\ref{sec:eval-perf}, the injection approaches used by related libraries have significanly less performance than the element resizing detection system used in \elq{}.
 
   \paragraph{Constraint-based CSS.}
@@ -732,6 +743,7 @@ The authors would like to thank EVRY for sponsoring the \elq{} project including
 \bibliographystyle{abbrv}
 \bibliography{elq}  % elq.bib is the name of the Bibliography in this case
 
+\newpage
 \appendix
 \section{Appendix}
   \subsection{Example Plugin Implementation}
@@ -740,7 +752,7 @@ The authors would like to thank EVRY for sponsoring the \elq{} project including
     The first plugin parses the breakpoints of the element attributes.
     The second plugin applies the breakpoint states as classes.
 
-    The following is a simplified implementation of the \code{make} method (see listing~\ref{code:elq-plugin-definition}) of the parsing plugin:
+    The following is a simplified implementation of the \code{make} method of the parsing plugin:
 
     \begin{lstlisting}[gobble=6,caption={},captionpos=b,label={}]]
       function activate(element) {
@@ -767,26 +779,22 @@ The authors would like to thank EVRY for sponsoring the \elq{} project including
       };
     \end{lstlisting}
 
+    \noindent
     In the \code{activate} method the plugin registers that resize detection is needed for the element and that it should be passed through the update flow.
     It also enables the application of breakpoint states and run-time cycle detection.
     Although not shown in the simplifed implementation, \code{applyBreakpointStates} and \code{cycleDetection} are in some cases disabled.
 
     The plugin that applies the element breakpoint states simply implements the \code{applyBreakpointStates} method to alter the \code{className} property of the element using the given element breakpoint states.
 
-  \subsection{Implementing element resize detection}
-    A naive approach to detecting element resize events is to have a script continously check elements if they have resized given some interval (polling).
+  \subsection{Implementing element resize detection}\label{sec:imp_erd}
+    \paragraph{Polling.}
+    A naive approach to detecting element resize events is to have a script continously check elements if they have resized given some interval.
     This approach is appealing because it does not mutate the DOM, supports arbitrary elements, and it provides excellent compatibility.
     However, in order to prevent the responsive elements lagging behind the size changes of the user interface, polling needs to be performed quite frequently.
     The problem is that each poll forces the layout queue to be flushed since the computed style of elements needs to be retrieved in order to know if elements have resized or not \cite{elq-thesis}.
     Since the polling is performed all the time the overall page performance is decreased even if the page is idle, which is undesired especially for mobile devices running on battery.
 
-    It is desired to instead have an event-based approach that only performs additional computations when an actual element resize has happened.
-    This is achieved by the resize detection subsystem of \elq{} by using two independent injecting approaches, both originally presented by \cite{backalley}.
-    These appraoches are limited to non-void elements, i.e., elements that may have content.
-    It is a reasonable limitation since void elements can easily be wrapped with non-void elements without affecting the page visually.
-    Like the batch processor, the resize detection subsystem is also implemented as a stand-alone project.\footnote{\url{https://github.com/wnr/element-resize-detector}}
-
-    \paragraph{Object-based resize detection.}
+    \paragraph{Injecting Objects.}
     Only documents emit resize events in modern browsers and therefore such events can only be observed for frame elements (since a frame element has its own document).
     This approach injects \code{object} elements into the target element, which can be listened to resize events since \code{object} elements are frames.
     The \code{object} is styled so that it always matches the size of the target element and so that it does not affect the page visually.
@@ -826,6 +834,7 @@ The authors would like to thank EVRY for sponsoring the \elq{} project including
       }
     \end{lstlisting}
 
+    \noindent
     It should be noted that the first level is executed asynchronously by the function, and not handled by the actual batch processor.
     Since each batch is delayed to execute asynchronously, all synchronous calls of the method is grouped into a pending batch.
     If the batch would not automatically be delayed, layout thrashing would occur when the method is called multiple times.
@@ -841,6 +850,7 @@ The authors would like to thank EVRY for sponsoring the \elq{} project including
       });
     \end{lstlisting}
 
+    \noindent
     The \code{activate} method of \elq{} is implemented similarly so it may also be called multiple times synchronously, without performance penalties, like the following example:
 
     \begin{lstlisting}[gobble=6,label={},caption={},captionpos=b]]
@@ -851,7 +861,6 @@ The authors would like to thank EVRY for sponsoring the \elq{} project including
   \subsection{A grid API}\label{grid-api}
     In this section we present a plugin that defines an API that enables developers to use responsive grids consisting of twelve columns and utility classes very similar to the ones defined by the CSS Bootstrap framework \cite{bootstrap}.
     The goal of the API is to provide an abstraction of element queries, so that developers may focus on responsivity using classes instead of the syntax presented in previous sections.
-
     The following is an example grid:
 
     %The example grid is defined to be single columned for small viewports, triple columned for medium viewports, and double columned for large viewports.
@@ -878,6 +887,7 @@ The authors would like to thank EVRY for sponsoring the \elq{} project including
       </div>
     \end{lstlisting}
 
+    \noindent
     The example grid is defined to be single columned when the width of the grid is below 500 pixels, triple columned when the width is between 500 and 700 pixels, and double columned for when the width is above 700 pixels.
     The last column is hidden when the width is above 700 pixels.
 
