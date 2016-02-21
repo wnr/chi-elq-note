@@ -417,15 +417,15 @@
   \noindent
   Since repositioning a scrollbar in some layout engines forces a layout, such operations need to be performed after all other queueable operations have been executed.
   Therefore, step~\ref{itm:erd-algo-original-scroll-5} is performed in level~\ref{itm:erd-algo-scroll-level-3} as the last step.
-  Even though some layout engines are unable to queue the repositing of scrollbars, it is still beneficial to batch process the algorithm, since only pure layouts need to be performed (instead of having to recompute styles, and synchronize the DOM and render trees before each layout).
+  Even though some layout engines are unable to queue the repositioning of scrollbars, it is still beneficial to batch process the algorithm, since only pure layouts need to be performed (instead of having to recompute styles, and synchronize the DOM and render trees before each layout).
   As step~\ref{itm:erd-algo-original-scroll-6} is performed by the layout engine asynchronously and does not interact with the DOM, it does not need to be batch processed.
 
   % TODO: Write about animation event that detects when elements are rendered/attached, if there is room.
 
 \section{Empirical evaluation}\label{sec:eval}
   \subsection{Performance}\label{sec:eval-perf}
-    Only the performance of the element resize detection system has been performed.
-    This due to the fact that detecting element resize events entails the significant performance penalties of \elq{}.
+    Only the performance of the element resize detection system has been evaluated.
+    This due to the fact that detecting element resize events entails all the significant performance penalties of \elq{}.
     Also, it is hard to compare performance results of related libraries since the functionality is different.
     Fortunately, element resize detection is the common denominator of all automatic libraries and the results of this system can be compared faithfully.
     Measurements and graphs show evaluations performed in Chrome version 42 unless stated otherwise.
@@ -527,7 +527,7 @@
     It also performs well when detecting resize events, which it does with a delay of 25 ms for 100 elements.
     \newline\indent
     \elq{} uses the object-based approach as a fallback for legacy browsers.
-    Therefore the performance of the \elq{} resize detection system is at minimum as performant as related approaches.
+    Therefore, the performance of the \elq{} resize detection system is at minimum as performant as related approaches.
     See table~\ref{table:erd-layout-engines} for the performance of \elq{}'s two resize detection strategies in different browsers.
 
     %\vspace{-0.5cm}
@@ -548,7 +548,7 @@
       \caption{Performance of the two resize detection strategies, operating on 100 elements.}
       \label{table:erd-layout-engines}
     \end{table}
-    \vspace{-1cm}
+    %\vspace{-0.5cm}
   \subsection{Case studies}
     In this section we aim to provide answers to the following questions:
     \begin{itemize}
@@ -608,7 +608,7 @@
     With only a small number of changes, the widely used Bootstrap framework can be modularized.
 
     \paragraph{Industrial use of \elq{}.}
-    In addition to the Bootstrap case study, we have been gathering experience with the application of \elq{} in large financial applications at EVRY.
+    In addition to the Bootstrap case study, we have been gathering experience with the application of \elq{} in large financial applications developed at EVRY AB, Sweden.
     Our practical experience shows that complex applications require a variety of features to be supported by element queries.
     Such features can be provided effectively by \elq{} plugins.
     % TODO: Write about the importance of having a JS API for breakpoints as well (as used in ResponsiveBlock) if there is space.
@@ -616,15 +616,15 @@
 \section{Discussion}\label{sec:discussion}
   \paragraph{Limitations.}
     Inherent to all current implementations of element queries is that the conditional style is applied ``one layout behind''.
-    Since a layout pass needs to have been performed in order for an element to change size, the conditional styles defined by the element queries cannot be applied until next layout.
+    Since a layout pass needs to have been performed in order for an element to change size, the conditional styles defined by the element queries cannot be applied until the next layout.
     Therefore, the element displays an invalid style until another layout has been performed.
     The flash of invalid design is usually so short that users do not notice it, but in some cases developers need to work around this issue to avoid more apparent results (especially when combined with animations).
     Another caveat is presented by the element resize detection approaches, as they mutate the DOM.
     Developers need to be aware of this as CSS selectors and JavaScript may also match the injected elements.
     This is easily avoided by good practices.
-    It should be noted that all limitations described only affects the elements that uses the element queries functionality.
+    It should be noted that all limitations described only affect the elements that uses the element queries functionality.
     \elq{} does not impose potential problems to other parts of the DOM other than where applied explicitly.
-    Currently \elq{} only supports breakpoints for the width and height element properties, as it has been identified as the general use case \cite{elq-thesis}.
+    Currently, \elq{} only supports breakpoints for the width and height element properties, as it has been identified as the general use case \cite{elq-thesis}.
     In the future, we aim to support plugins to define custom breakpoint properties.
 
   \paragraph{Standardization.}
@@ -632,7 +632,7 @@
     By limiting element queries to specially separated container elements that can only be queried by child elements, many of the problems are resolved \cite{ricg_irc_log,ricg_issue_viewport}.
     Therefore, the Responsive Issues Community Group (RICG) is currently investigating the possibility of standardizing \emph{container} queries.
     Unfortunately, even such limited container queries require significant effort to implement due to the complex changes to browsers required \cite{ricg_issue_viewport}.
-    Atkins argues that a full implementation that avoids the double layout issue is unlikely to be implemented, and therefore it might be wiser to pursue sub-standards that aids third-party solutions instead.
+    Atkins argues that a full implementation that avoids the double layout issue is unlikely to be implemented, and therefore it might be wiser to pursue sub-standards which aid third-party solutions instead.
     In the future, we hope that \elq{} may use the aiding sub-standards pushed by RICG, to achieve greater flexibility and performance.
     A standardized resize event would enable us to avoid injecting elements, and to reduce the code base of \elq{} significantly.
     Support for custom at-rules/selectors would also enable us to define a more natural API in CSS.
