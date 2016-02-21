@@ -71,9 +71,9 @@
   Hence, responsive elements can only be reused if the global context is exactly the same.
   This makes it extremely challenging to develop large responsive applications, because the lack of true modularity makes certain requirement changes either impossible or expensive to realize.
 
-  In this paper we extend RWD to also include responsive modules, i.e., modules that adapt their design based on their local context independently of the global context.
+  In this paper we extend RWD to also include responsive modules, i.e., modules that adapt their design based on their local context, independently of the global context.
   We present the \elq{} project which implements our approach.
-  \elq{} is a novel implementation of so-called \emph{element queries} which generalize media queries.
+  \elq{} is a novel implementation of so-called \emph{element queries} which generalize CSS media queries.
   Importantly, our design conforms to existing web specifications, enabling adoption on a large scale.
   \elq{} is designed to be heavily extensible using plugins.
   Experimental results show speed-ups of the core algorithms of up to 37x compared to previous approaches.
@@ -89,7 +89,7 @@
   In order for a module to be reusable it must not assume in which context it is being used.
 
   In this paper we focus on the presentation layer of web applications.
-  As it stands, using media queries to make the presentation layer responsive precludes modularity.
+  As it stands, using CSS media queries to make the presentation layer responsive precludes modularity.
   The problem is that there is no way to make a module responsive without making it context-aware, due to the fact that media queries can only target the viewport; this means that responsive modules can only respond to changes of the (global) viewport.
   Thus, a responsive module using media queries is layout dependent and has both reduced functionality and limited reusability~\cite{elq-thesis}.
   As a result, media queries can only be used for RWD of non-modular static applications.
@@ -119,7 +119,7 @@
     As we can see, even with the exemplified limited requirements there are still significant restrictions when using media queries for responsive modules.
 
   \paragraph{Requirements.}\label{sec:reqs}
-    The desired behavior of a responsive module is having its inner design respond to the size of \emph{its container} instead of the viewport.
+    The desired behavior of a responsive module is having its inner design respond to the size of its \emph{container} instead of the viewport.
     Only then is a responsive module independent of its layout context.
     Realizing responsive modules requires CSS rules that are conditional upon \emph{elements}, instead of the global viewport.
     We have identified the following requirements of a solution:
@@ -192,7 +192,7 @@
 
   When the breakpoint states of an element changes, \elq{} performs cycle detection in order to detect and handle possible style cycles.
   If a cycle is detected, the new element breakpoint states are not applied in order to avoid an infinite loop of layouts.
-  The cycle detection system is implemented as an conservative algorithm, and may in some cases detect false positives.
+  The cycle detection system is implemented as a conservative algorithm, and may in some cases detect false positives.
 
   \paragraph{The default breakpoints API.}
     In this section, we use the \code{elq-breakpoints} plugin API (that is bundled with \elq{} as default) that let us define element breakpoints.
@@ -228,8 +228,8 @@
 
     \noindent
     In order for the conditional styles to be applied, the elements that have breakpoints must be activated by the \elq{} JavaScript runtime.
-    \elq{} can either be required as a module (by the CommonJS or AMD syntax), or it can be included in a HTML \code{script} tag which then exposes a global constructor \code{Elq}.
-    The following is an example of how to create an \elq{} instance and activating elements:
+    \elq{} can either be required as a module (by the CommonJS or AMD syntax), or it can be included in an HTML \code{script} tag which then exposes a global constructor \code{Elq}.
+    The following is an example of how to create an \elq{} instance and activate elements:
 
     \begin{lstlisting}[gobble=6,caption={}]]
       var elq = Elq();
@@ -267,7 +267,7 @@
       \end{lstlisting}
 
       \noindent
-      In this example, the paragraph elements always have the same element breakpoint classes as the parent \code{elq-breakpoints} elements.
+      In this example, the paragraph elements (\verb|<p elq elq-mirror>...</p>|) always have the same element breakpoint classes as the parent \code{elq-breakpoints} elements.
       This enables us to write CSS that does not traverse the ancestor tree:
 
       \begin{lstlisting}[gobble=8,caption={},captionpos=b,label={code:elq-mirror-example-css}]]
@@ -305,10 +305,10 @@
   \end{lstlisting}
 
   \noindent
-  All of the methods are invoked when registered to an \elq{} instance.
-  The \code{getName} and \code{getVersion} methods tells the name and version of the plugin.
-  The \code{isCompatible} tells if the plugin is compatible with the \elq{} instance that it is registered to.
-  In the \code{make} method the plugin may initialize itself to the \elq{} instance and return an object that defines the plugin API accessible by \elq{} and other plugins.
+  All of the methods are invoked when registered with an \elq{} instance.
+  The \code{getName} and \code{getVersion} methods tell the name and version of the plugin.
+  The \code{isCompatible} tells if the plugin is compatible with the \elq{} instance that it is registered with.
+  In the \code{make} method the plugin may initialize itself with the \elq{} instance and return an object that defines the plugin API accessible by \elq{} and other plugins.
   \elq{} invokes certain methods of the plugin API, if implemented, to let plugins decide the behavior of the system.
   Those methods are the following:
   \begin{itemize}
@@ -411,13 +411,13 @@
       All mutations performed in this level can be queued by layout engines.
     \item\label{itm:erd-algo-scroll-level-3}
       \textbf{The forced layout level:}
-      Step \ref{itm:erd-algo-original-scroll-5} is performed, which forces the some layout engines to perform a layout.
+      Step \ref{itm:erd-algo-original-scroll-5} is performed, which forces some layout engines to perform a layout.
   \end{enumerate}
 
   \noindent
-  Since repositioning a scrollbar in some layout engines forces a layout, such operations need to be performed after that all other queueable operations have been executed.
+  Since repositioning a scrollbar in some layout engines forces a layout, such operations need to be performed after all other queueable operations have been executed.
   Therefore, step~\ref{itm:erd-algo-original-scroll-5} is performed in level~\ref{itm:erd-algo-scroll-level-3} as the last step.
-  Even though some layout engines are unable to queue the repositing of scrollbars, it is still beneficial to batch process the algorithm since only pure layouts need to be performed (instead of having to recompute styles, and synchronize the DOM and render trees before each layout).
+  Even though some layout engines are unable to queue the repositing of scrollbars, it is still beneficial to batch process the algorithm, since only pure layouts need to be performed (instead of having to recompute styles, and synchronize the DOM and render trees before each layout).
   As step~\ref{itm:erd-algo-original-scroll-6} is performed by the layout engine asynchronously and does not interact with the DOM, it does not need to be batch processed.
 
   % TODO: Write about animation event that detects when elements are rendered/attached, if there is room.
