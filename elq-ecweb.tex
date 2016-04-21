@@ -9,6 +9,22 @@
 % \makeindex          % be prepared for an author index
 %
 
+\usepackage{amssymb}
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+\usepackage{listings}
+\lstset{
+  basicstyle=\scriptsize,
+}
+\usepackage{tikz}
+\usetikzlibrary{arrows,positioning,fit,calc,decorations.markings}
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest} % Allows to place the legend below plot
+\usepgfplotslibrary{units} % Allows to enter the units nicely
+\usepackage{multirow}
+
+\usepackage{wrapfig}
+
 \usepackage{url}
 \urldef{\mailsa}\path|lucas.wiener@evry.com, tomase@kth.se, phaller@kth.se|
 
@@ -120,6 +136,173 @@
   Section~\ref{sec:discussion} discusses limitations of \elq{} and related libraries, as well as the current state of standardization of element queries.
   Section~\ref{sec:related} relates \elq{} to prior work, and Section~\ref{sec:conclusion} concludes.}
 
+\section{Empirical evaluation}\label{sec:eval}
+  %\subsection{Performance}\label{sec:eval-perf}
+    \begin{wrapfigure}{r}{0.5\textwidth}
+    \begin{center}
+      \begin{tikzpicture}
+        \tiny
+            \begin{axis}[
+                width=0.5\textwidth, % Scale the plot to \linewidth
+                grid=major, % Display a grid
+                grid style={dashed,gray!30}, % Set the style
+                xlabel=Number of elements, % Set the labels
+                ylabel=Injection time,
+                y unit=s, % Set the respective units
+                legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
+              ]
+              \addplot+[red, mark options={red}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-object-original.csv};
+              \addplot+[orange, mark options={orange}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-original.csv};
+              \addplot+[blue, mark options={blue}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-elq.csv};
+              %\addplot[dashed,red,domain=1:1500,samples=100] {5.567042796*10^(-6)*x^2 + 4.680174396*10^(-3)*x + 6.495754669*10^(-3)};
+              %\addplot[dashed,orange,domain=1:1500,samples=100] {4.533208873*10^(-6)*x^2 + 6.320377596*10^(-4)*x + 2.289566005*10^(-2)};
+              %\addplot[dashed,blue,domain=1:1500,samples=100] {4.071740702*10^(-8)*x^2 + 1.823749404*10^(-4)*x + 1.527042267*10^(-2)};
+              \addlegendentry{Object-based approach}
+              \addlegendentry{Scroll-based approach}
+              \addlegendentry{ELQ scroll-based approach}
+            \end{axis}
+          \end{tikzpicture}
+    \end{center}
+    %\caption{Birds}
+    \end{wrapfigure}
+
+    Only the performance of the element resize detection system has
+    been evaluated.  This is due to the fact that detecting element
+    resize events entails all the significant performance penalties of
+    \elq{}.  Fortunately, element resize detection is the common
+    denominator of all automatic libraries and the results of this
+    system can be compared faithfully.  Measurements and graphs show
+    evaluations performed in Chrome version 42 unless stated
+    otherwise.  Previous implementations use one of two
+    approaches~\cite{backalley}: (a) {\em object-based} resize
+    detection, which uses \verb|object| elements, and (b) {\em
+      scroll-based} resize detection, which uses overflowing elements.
+    The approach of \elq{} extends the scroll-based approach with
+    batch processing to increase performance.
+    The plot to the right compares the start-up performance
+    of \elq{}'s scroll-based approach with the other two approaches.
+    \elq{} achieves a 37-fold speedup compared to the object-based
+    approach and a 17-fold speedup compared to the scroll-based
+    approach when preparing 700 elements for resize detection.  It
+    also performs well when detecting resize events, which it does
+    with a delay of 25 ms for 100 elements.
+
+    \comment{
+    \begin{figure*}[h]
+      \tiny
+      \begin{center}
+        \begin{minipage}[t]{.5\textwidth}
+          \vspace{0pt}
+          \centering
+      \tiny
+      \begin{tabular}[t]{ l l l l l l l }
+        \multirow{2}{*}{Browsers} & \multicolumn{2}{c}{Injection} & \multicolumn{2}{c}{Resize detection} \\
+        & scroll & object & scroll & object \\
+        \hline
+        Chrome v. 42                & 30 ms   & 550 ms    & 25 ms    & 20 ms  \\
+        Firefox v. 40               & 150 ms  & 1000 ms   & 70 ms    & 30 ms  \\
+        Safari v. 9                 & 100 ms  & 400 ms    & 30 ms    & 20 ms  \\
+        Internet Explorer v. 11     & 350 ms  & 6700 ms   & 100 ms   & 80 ms  \\
+        iOS Safari v. 9             & 350 ms  & 1600 ms   & 150 ms   & 60 ms  \\
+        Android v. 5 Chrome v. 39   & 40 ms   & 1000 ms  & 20 ms     & 10 ms  \\
+      \end{tabular}
+
+        \end{minipage}%
+        \begin{minipage}[t]{.5\textwidth}
+          \vspace{0pt}
+          \centering
+          \begin{tikzpicture}
+            \begin{axis}[
+                width=\textwidth, % Scale the plot to \linewidth
+                grid=major, % Display a grid
+                grid style={dashed,gray!30}, % Set the style
+                xlabel=Number of elements, % Set the labels
+                ylabel=Injection time,
+                y unit=s, % Set the respective units
+                legend style={at={(0.5,-0.20)},anchor=north} % Put the legend below the plot
+              ]
+              \addplot+[red, mark options={red}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-object-original.csv};
+              \addplot+[orange, mark options={orange}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-original.csv};
+              \addplot+[blue, mark options={blue}] table[x=n elements,y=injection time,col sep=comma] {./data/erd-scroll-elq.csv};
+              \addplot[dashed,red,domain=1:1500,samples=100] {5.567042796*10^(-6)*x^2 + 4.680174396*10^(-3)*x + 6.495754669*10^(-3)};
+              \addplot[dashed,orange,domain=1:1500,samples=100] {4.533208873*10^(-6)*x^2 + 6.320377596*10^(-4)*x + 2.289566005*10^(-2)};
+              \addplot[dashed,blue,domain=1:1500,samples=100] {4.071740702*10^(-8)*x^2 + 1.823749404*10^(-4)*x + 1.527042267*10^(-2)};
+              \addlegendentry{Object-based approach}
+              \addlegendentry{Scroll-based approach}
+              \addlegendentry{ELQ scroll-based approach}
+            \end{axis}
+          \end{tikzpicture}
+        \end{minipage}
+      \caption{The left graph shows the injection time of the \elq{} scroll-based approach. The right graph shows all three approaches, including graph predictions by polynomial regression.}
+      \label{fig:erd-elq-scroll}
+      \end{center}
+    \end{figure*}
+    }
+    
+  %\newpage
+
+  \comment{According to its website, ``Bootstrap is the most popular HTML, CSS, and JS framework for developing responsive, mobile first projects on the web.''~\cite{bootstrap}}
+
+  \subsection{Case studies}
+    \comment{
+    We have adapted the popular Bootstrap~\cite{bootstrap} framework to use element queries instead of media queries.
+    To modularize Bootstrap, we redefine the behavior of its responsive elements so that they no longer respond to the viewport but to enclosing container elements.
+    The following observation guides our modularization: all responsive elements should respond to their closest enclosing \code{container} or \code{container-fluid} element.
+    Both classes are used in Bootstrap to define new parts of a page (e.g., a grid is required to have a container ancestor).
+    We also enable them to be nestable, which is important to satisfy the requirement of composable modules.
+    The breakpoints of the container elements are defined using the \code{elq-breakpoints} API.
+    Since the Bootstrap API uses a predefined set of breakpoints, they are all added to the container elements dynamically with JavaScript.
+    According to this design, we convert all responsive elements of Bootstrap to \code{elq-mirror} elements, since they need to mirror the breakpoints of the nearest ancestor \code{elq-breakpoints} element.
+    Since container elements may be nested, they have both the \code{elq-breakpoints} and \code{elq-mirror} behavior.
+
+    The breakpoints of Bootstrap are defined as the following constants:\footnote{The Bootstrap CSS is generated using the LESS preprocessor~\cite{lesscss}.}
+    \begin{lstlisting}[gobble=6,label={code:bootstrap-less-breakpoints},caption={},captionpos=b]]
+      @screen-sm-min: 480px;
+      @screen-md-min: 992px;
+      @screen-lg-min: 1200px;
+    \end{lstlisting}
+
+    \noindent
+    The following example shows how Bootstrap's style definitions are changed from using media queries to using \elq{}'s element queries:
+    \begin{lstlisting}[gobble=6,label={code:bootstrap-less-breakpoints-usage},caption={},captionpos=b]]
+      /* File "less/grid.less" of Bootstrap. */
+
+      // Original Bootstrap using media queries.
+      .container {
+        @media (min-width: @screen-sm-min) {
+          width: @container-sm;
+        }
+        ...
+      }
+
+      // ELQ Bootstrap using element queries.
+      .container {
+        &.elq-min-width-@{screen-sm-min} {
+          width: @container-sm;
+        }
+        ...
+      }
+    \end{lstlisting}
+    \noindent
+    }
+
+    \paragraph{Modularizing Bootstrap.}
+    We have adapted the popular Bootstrap~\cite{bootstrap} framework
+    to use element queries instead of media queries, to enable its use
+    by responsive modules. By using CSS preprocessors to make the
+    syntax of \elq{} element queries similar to media queries, only
+    0.6\% of LOC changes were required. In summary we have shown that
+    it is easy to adapt existing responsive code to use \elq{}'s
+    element queries instead of media queries.
+
+    \paragraph{Industrial use of \elq{}.}
+    We have also been gathering experience with the application of
+    \elq{} in large financial applications developed at EVRY AB,
+    Sweden. Our practical experience shows that complex applications
+    require a variety of features to be supported by element queries.
+    Such features can be provided effectively by \elq{} plugins.
+    % TODO: Write about the importance of having a JS API for breakpoints as well (as used in ResponsiveBlock) if there is space.
+
 \section{Related Work}\label{sec:related}
 
   \paragraph{Syntax extensions.}
@@ -135,7 +318,7 @@
   Approach \cite{eq_imp_classquery} does not detect resize events at all.
   Like \elq{}, \cite{eq_imp_localised-css,eq_imp_selector_queries,eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} observe \emph{elements} for resize events.
   The libraries \cite{eq_imp_localised-css,eq_imp_selector_queries} use polling while \elq{} and \cite{eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} use different injection approaches.
-  As shown in Section~\ref{sec:eval-perf}, the injection approaches used by related libraries have significanly less performance than the element resizing detection system used in \elq{}.
+  As shown in Section~\ref{sec:eval}, the injection approaches used by related libraries have significantly less performance than the element resizing detection system used in \elq{}.
 
   \paragraph{Constraint-based CSS.}
   CCSS~\cite{badros1999constraint} proposes a more general and flexible alternative to CSS.
