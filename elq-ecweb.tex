@@ -1,0 +1,153 @@
+% This is lnbip.tex the demonstration file of the LaTeX macro package for
+% Lecture Notes in Business Information Processing from Springer-Verlag.
+% It serves as a template for authors as well.
+% version 1.0 for LaTeX2e
+%
+\documentclass[lnbip]{svmultln}
+%
+\usepackage{makeidx}  % allows for indexgeneration
+% \makeindex          % be prepared for an author index
+%
+
+\usepackage{url}
+\urldef{\mailsa}\path|lucas.wiener@evry.com, tomase@kth.se, phaller@kth.se|
+
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\elq}{ELQ}
+\newcommand{\comment}[1]{}
+
+\begin{document}
+%
+\mainmatter              % start of the contribution
+%
+\title{Modular Responsive Web Design using\\ Element Queries}
+%
+\titlerunning{Modular Responsive Web Design using Element Queries}  % abbreviated title (for running head)
+%                                     also used for the TOC unless
+%                                     \toctitle is used
+%
+\author{Lucas Wiener\inst{1}%
+\and Tomas Ekholm\inst{1,2}\and Philipp Haller\inst{2}}
+%
+\authorrunning{Lucas Wiener et al.}   % abbreviated author list (for running head)
+%
+%%%% list of authors for the TOC (use if author list has to be modified)
+%\tocauthor{Ivar Ekeland, Roger Temam, Jeffrey Dean, David Grove,
+%Craig Chambers, Kim B. Bruce, Elisa Bertino}
+%
+\institute{EVRY AB, Sweden
+\and KTH Royal Institute of Technology, Sweden
+\mailsa\\}
+
+\maketitle              % typeset the title of the contribution
+% \index{Ekeland, Ivar} % entries for the author index
+% \index{Temam, Roger}  % of the whole volume
+% \index{Dean, Jeffrey}
+
+\begin{abstract}        % give a summary of your paper
+  Responsive Web Design (RWD) enables web applications to adapt to the characteristics of different devices such as screen size which is important for mobile browsing.
+  Today, the only W3C standard to support this adaptability is CSS media queries.
+  However, using media queries it is impossible to create applications in a modular way, because responsive elements then always depend on the global context.
+  Hence, responsive elements can only be reused if the global context is exactly the same.
+  This makes it extremely challenging to develop large responsive applications, because the lack of true modularity makes certain requirement changes either impossible or expensive to realize.
+
+  In this paper we extend RWD to also include responsive modules, i.e., modules that adapt their design based on their local context, independently of the global context.
+  We present the \elq{} project which implements our approach.
+  \elq{} is a novel implementation of so-called \emph{element queries} which generalize CSS media queries.
+  Importantly, our design conforms to existing web specifications, enabling adoption on a large scale.
+  \elq{} is designed to be heavily extensible using plugins.
+  Experimental results show speed-ups of the core algorithms of up to 37x compared to previous approaches.
+%                         please supply keywords within your abstract
+\keywords{Responsive web design, Element queries, CSS, Modularity}
+\end{abstract}
+%
+\section{Introduction}
+
+  Responsive Web Design (RWD) is an approach to make an application respond to the viewport size and device characteristics.
+  This is currently achieved by using CSS media queries that are designed to conditionally design content by the media, such as using serif fonts when printed and sans-serif when viewed on a screen \cite{w3c_css_mq}.
+  In order to reduce complexity and enable reusability, applications are typically composed of modules, i.e., interchangeable and independent parts that have a single and well-defined responsibility \cite{parnas1972criteria}.
+  In order for a module to be reusable it must not assume in which context it is being used.
+
+  In this paper we focus on the presentation layer of web applications.
+  As it stands, using CSS media queries to make the presentation layer responsive precludes modularity.
+  The problem is that there is no way to make a module responsive without making it context-aware, due to the fact that media queries can only target the viewport; this means that responsive modules can only respond to changes of the (global) viewport.
+  Thus, a responsive module using media queries is layout dependent and has both reduced functionality and limited reusability~\cite{elq-thesis}.
+  As a result, media queries can only be used for RWD of non-modular static applications.
+  In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application becomes a cumbersome task since it may require many responsive modules to be updated.
+
+  \paragraph{The Problem Exemplified.}
+    Imagine a company working on a big application that uses media queries for responsiveness (i.e., each responsive module assumes to have a specific percentage of the viewport size).
+    The ability to change is desired by both developers and stakeholders, but is limited by this responsive approach.
+    The requirement of changing a menu from being a horizontal menu at the top to being a vertical menu on the side implies that all responsive modules break, since the assumed proportionality of each module is changed.
+    Even worse, if the menu is also supposed to hide on user input, the responsiveness of the module breaks, since the layout changes dynamically.
+    The latter requirement is impossible to satisfy in a modular way without element queries.
+
+  \paragraph{Requirements.}\label{sec:reqs}
+    The desired behavior of a responsive module is having its inner
+    design respond to the size of its \emph{container} instead of the
+    viewport, to make it independent of its layout context.  The W3C
+    has discussed such a feature under the name of \emph{element
+      queries} given its analogy to media queries~\cite{w3c_eq_mail}.
+    We have identified the following requirements: a solution must (a)
+    provide the possibility for an element to automatically respond to
+    changes of its parent's properties; (b) conform to the syntax of
+    HTML, CSS, and JavaScript to retain the compatibility of tools,
+    libraries and existing projects; (c) have adequate performance;
+    (d) enable developers to write encapsulated style rules, so that
+    responsive modules may be arbitrarily composed without any
+    conflicting style rules.
+
+  \paragraph{Contributions.}
+    This paper makes the following contributions:
+    \begin{itemize}
+      \item A new design for element queries that enables responsive modules while conforming to the syntax of HTML, CSS, and JavaScript.
+      \item
+        Our approach is the first to enable nested elements that are responsive in a modular way, i.e., modules fully encapsulate any styling required for RWD.
+        As a side effect, responsive modules may also be arbitrarily styled with CSS independent of their context.
+      \item
+        A new implementation\footnote{ELQ, an open-source library (MIT license): \url{https://github.com/elqteam/elq}} that offers substantially higher performance than previous approaches.
+        The implementation batch-processes DOM operations in order to avoid layout thrashing (i.e., forcing the layout engine to perform multiple independent layouts).
+      \item
+        A run-time cycle detection system that detects and breaks cycles stemming from cyclic rules due to unrestricted usage of element queries~\cite{elq-thesis}.
+    \end{itemize}
+
+  \comment{
+  \noindent
+  The rest of the paper is organized as follows.
+  Section~\ref{sec:elq} introduces \elq{} and its API from a user's perspective.
+  Section~\ref{sec:imp} provides an overview of the implementation of \elq{}'s element resize detection system.
+  In Section~\ref{sec:eval} we evaluate the performance of \elq{} and report on case studies.
+  Section~\ref{sec:discussion} discusses limitations of \elq{} and related libraries, as well as the current state of standardization of element queries.
+  Section~\ref{sec:related} relates \elq{} to prior work, and Section~\ref{sec:conclusion} concludes.}
+
+\section{Conclusion}\label{sec:conclusion}
+  %Responsive Web Design (RWD) enables web applications to adapt to the characteristics of different devices, which is achieved using CSS media queries.
+  %However, using media queries it is impossible to create responsive applications in a modular way, because responsive elements then always depend on the global context.
+
+  This paper extends Responsive Web Design (RWD) with {\em responsive
+    modules} through element queries.  Our approach is the first to
+  enable nested elements that are responsive in a modular way, i.e.,
+  modules fully encapsulate any styling required for RWD.  Our
+  implementation, \elq{}, is fully compatible with existing web
+  standards and technologies. The element resize detection of \elq{}
+  performs up to 37x better than previous algorithms.  We present a
+  case study which shows that changing only about 0.6\% of the LOC is
+  sufficient to enable the use of the popular Bootstrap framework in
+  responsive modules.  We also report on first commercial usage of
+  \elq{}.
+
+  \comment{
+  We believe \elq{} is an important contribution to realizing a
+  modular form of element queries, in particular since standardization
+  bodies like the RICG do not intend to standardize a complete
+  solution.  In the future we intend to improve \elq{} by using
+  forthcoming standards developed by the RICG to avoid some current
+  limitations.}
+
+%
+% ---- Bibliography ----
+%
+\bibliographystyle{abbrv}
+\bibliography{elq}  % elq.bib is the name of the Bibliography in this case
+%
+\end{document}
