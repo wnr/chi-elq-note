@@ -12,6 +12,7 @@
 \usepgfplotslibrary{units} % Allows to enter the units nicely
 \usepackage{url}
 \usepackage{multirow}
+\usepackage{graphicx}
 
 \newcommand{\elq}{ELQ}
 \newcommand{\code}[1]{\texttt{#1}}
@@ -44,13 +45,7 @@
 
 
 \begin{document}
-\title{SIG Proceedings Paper in LaTeX Format}
-\titlenote{Produces the permission block, and
-  copyright information}
-\subtitle{Extended Abstract}
-\subtitlenote{The full version of the author's guide is available as
-  \texttt{acmart.pdf} document}
-
+\title{Modular Responsive Web Design Using\\ Element Queries: An Experience Report}
 
 \author{Ben Trovato}
 \authornote{Dr.~Trovato insisted his name be first.}
@@ -85,40 +80,8 @@
   \country{Iceland}}
 \email{larst@affiliation.org}
 
-\author{Lawrence P. Leipuner}
-\affiliation{
-  \institution{Brookhaven Laboratories}
-  \streetaddress{P.O. Box 5000}}
-\email{lleipuner@researchlabs.org}
-
-\author{Sean Fogarty}
-\affiliation{%
-  \institution{NASA Ames Research Center}
-  \city{Moffett Field}
-  \state{California}
-  \postcode{94035}}
-\email{fogartys@amesres.org}
-
-\author{Charles Palmer}
-\affiliation{%
-  \institution{Palmer Research Laboratories}
-  \streetaddress{8600 Datapoint Drive}
-  \city{San Antonio}
-  \state{Texas}
-  \postcode{78229}}
-\email{cpalmer@prl.com}
-
-\author{John Smith}
-\affiliation{\institution{The Th{\o}rv{\"a}ld Group}}
-\email{jsmith@affiliation.org}
-
-\author{Julius P.~Kumquat}
-\affiliation{\institution{The Kumquat Consortium}}
-\email{jpkumquat@consortium.net}
-
 % The default list of authors is too long for headers}
 \renewcommand{\shortauthors}{B. Trovato et al.}
-
 
 \begin{abstract}
     Responsive Web Design (RWD) enables web applications to adapt to the characteristics of different devices such as screen size which is important for mobile browsing.
@@ -190,6 +153,9 @@
   Thus, a responsive module using media queries is layout dependent and has both reduced functionality and limited reusability~\cite{elq-thesis}.
   As a result, media queries can only be used for RWD of non-modular static applications.
   In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application becomes a cumbersome task since it may require many responsive modules to be updated.
+  The limitations of CSS with regard to compositionality are well known (as shown in the tweet below). While we do not claim to solve the whole problem, we address compositionality issues in the context of RWD.
+
+  \includegraphics[scale=.35]{tweet_tvdstorm}
 
   \paragraph{The Problem Exemplified.}
     Imagine an application that displays the current weather of various cities as widgets, by using a weather widget module.
@@ -213,6 +179,7 @@
     With element queries breakpoints may be defined relative to the font size of the targeted element.
 
     As we can see, even with the exemplified limited requirements there are still significant restrictions when using media queries for responsive modules.
+
 
   \paragraph{Requirements.}\label{sec:reqs}
     The desired behavior of a responsive module is having its inner design respond to the size of its \emph{container} instead of the viewport.
