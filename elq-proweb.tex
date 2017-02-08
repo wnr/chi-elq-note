@@ -30,58 +30,52 @@
 
 
 % DOI
-\acmDOI{10.475/123_4}
+% \acmDOI{10.475/123_4}
 
 % ISBN
-\acmISBN{123-4567-24-567/08/06}
+% \acmISBN{123-4567-24-567/08/06}
 
 %Conference
-\acmConference[WOODSTOCK'97]{ACM Woodstock conference}{July 1997}{El
-  Paso, Texas USA}
-\acmYear{1997}
-\copyrightyear{2016}
-
-\acmPrice{15.00}
+% \acmConference[WOODSTOCK'97]{ACM Woodstock conference}{July 1997}{El
+%   Paso, Texas USA}
+% \acmYear{1997}
+% \copyrightyear{2016}
+%
+% \acmPrice{15.00}
 
 
 \begin{document}
 \title{Modular Responsive Web Design Using\\ Element Queries: An Experience Report}
 
-\author{Ben Trovato}
-\authornote{Dr.~Trovato insisted his name be first.}
-\orcid{1234-5678-9012}
+\author{Lucas Wiener}
 \affiliation{%
-  \institution{Institute for Clarity in Documentation}
-  \streetaddress{P.O. Box 1212}
-  \city{Dublin}
-  \state{Ohio}
-  \postcode{43017-6221}
+  \institution{EVRY AB, Sweden}
+  \streetaddress{Ekensbergsvägen 113}
+  \city{Solna}
+  \postcode{171 79}
 }
-\email{trovato@corporation.com}
+\email{lucas.wiener@evry.com}
 
-\author{G.K.M. Tobin}
-\authornote{The secretary disavows any knowledge of this author's actions.}
+\author{Tomas Ekholm}
 \affiliation{%
-  \institution{Institute for Clarity in Documentation}
-  \streetaddress{P.O. Box 1212}
-  \city{Dublin}
-  \state{Ohio}
-  \postcode{43017-6221}
+  \institution{KTH Royal Institute of Technology}
+  \streetaddress{Brinellvägen 8}
+  \city{Stockholm}
+  \postcode{114 28}
 }
-\email{webmaster@marysville-ohio.com}
+\email{tomase@kth.se}
 
-\author{Lars Th{\o}rv{\"a}ld}
-\authornote{This author is the
-  one who did all the really hard work.}
+\author{Philipp Haller}
 \affiliation{%
-  \institution{The Th{\o}rv{\"a}ld Group}
-  \streetaddress{1 Th{\o}rv{\"a}ld Circle}
-  \city{Hekla}
-  \country{Iceland}}
-\email{larst@affiliation.org}
+    \institution{KTH Royal Institute of Technology}
+    \streetaddress{Brinellvägen 8}
+    \city{Stockholm}
+    \postcode{114 28}
+}
+\email{phaller@kth.se}
 
 % The default list of authors is too long for headers}
-\renewcommand{\shortauthors}{B. Trovato et al.}
+\renewcommand{\shortauthors}{L. Wiener et al.}
 
 \begin{abstract}
     Responsive Web Design (RWD) enables web applications to adapt to the characteristics of different devices such as screen size which is important for mobile browsing.
@@ -103,6 +97,7 @@
 % http://dl.acm.org/ccs.cfm
 % Please copy and paste the code instead of the example below.
 %
+
 \begin{CCSXML}
 <ccs2012>
  <concept>
@@ -220,19 +215,19 @@
         This makes it possible to create plugins in order to enable new features and to ease integration of \elq{} into existing projects.
       \item
         A new implementation that offers substantially higher performance than previous approaches.
-        The implementation batch-processes DOM operations in order to avoid layout thrashing (i.e., forcing the layout engine to perform multiple independent layouts). We also provide an integration component\footnote{\url{TODO}} for the React user interface library.
+        The implementation batch-processes DOM operations in order to avoid layout thrashing (i.e., forcing the layout engine to perform multiple independent layouts). We also provide an integration component\footnote{\url{https://github.com/elqteam/react-responsive-block}} for the React user interface library.
       \item
         A run-time cycle detection system that detects and breaks cycles stemming from cyclic rules due to unrestricted usage of element queries~\cite{elq-thesis}.
     \end{itemize}
 
-  \noindent
   The rest of the paper is organized as follows.
   Section~\ref{sec:elq} introduces \elq{} and its API from a user's perspective.
-  In Section~\ref{sec:plugins} we introduce \elq{}'s plugin architecture.
   Section~\ref{sec:imp} provides an overview of the implementation of \elq{}'s element resize detection system.
-  In Section~\ref{sec:eval} we evaluate the performance of \elq{} and report on case studies.
+  Section~\ref{sec:eval} evaluates the performance of \elq{}.
+  Section~\ref{sec:case-studies} reports on case studies of using \elq{}.
+  Section~\ref{sec:related} relates \elq{} to prior work.
   Section~\ref{sec:discussion} discusses limitations of \elq{} and related libraries, as well as the current state of standardization of element queries.
-  Section~\ref{sec:related} relates \elq{} to prior work, and Section~\ref{sec:conclusion} concludes.
+  Section~\ref{sec:conclusion} concludes.
 
 \section{Overview of \elq{}}\label{sec:elq}\label{sec:elq-api}
   An \emph{element breakpoint} is defined as a point of an element
@@ -261,9 +256,15 @@
   For each breakpoint only the min/max part changes, to mimic CSS media queries.
   This is how the classes may be used in CSS to conditionally style the children:
   \begin{lstlisting}[gobble=4]
-    .foo.elq-max-width-300px                     { background-color: blue; }
-    .foo.elq-min-width-300px.elq-max-width-500px { background-color: green; }
-    .foo.elq-min-width-500px p                   { color: white; }
+    .foo.elq-max-width-300px {
+        background-color: blue;
+    }
+    .foo.elq-min-width-300px.elq-max-width-500px {
+        background-color: green;
+    }
+    .foo.elq-min-width-500px p {
+        color: white;
+    }
   \end{lstlisting}
   This is however not sufficient for nestable modules since there is no way to limit the CSS matching search of the selectors.
   The last style rule specifies that all paragraph elements should have white text if \emph{any} \code{.foo} ancestor breakpoints element is wider than 500 pixels.
@@ -289,8 +290,18 @@
   Since the breakpoint state class is now combined with the paragraph, the conditional style will only be applied in relation to the actual desired breakpoints element parent.
 
   \subsection{Advanced breakpoint logic}
-  TODO: Write about JS API and how we use it at EVRY.
-  Link to Ract wrapper?
+    Morphing shared markup into structrually different layouts is complex by only using CSS.
+    A better way is to produce the different markup by using the expressiveness of JavaScript.
+
+    For instance, one interface design approach is to have buttons sorted in importance priority from left to right (more important to the right) for wide views.
+    For narrow views, it might be desired to have the buttons stacked vertically sorted in priority top to bottom.
+    Since the natural flow of HTML is to render top left to bottom right, we want to structurally change the markup order of the buttons.
+    Another example is when table columns should disappear for narrow views, and the data instead should be presented elsewhere.
+
+    The CSS solution to this can be very complex, compared to a simple JavaScript condition rendering different markup for the two cases.
+    The maintainability of a local solution in JavaScript excells over a solution in the global space of CSS.
+    \elq{} provides a JavaScript API that is suitable to build higher abstractions upon.
+    We have for instance created a React component\footnote{\url{https://github.com/elqteam/react-responsive-block}} on top of \elq{} that sends the current breakpoint state as an input property to the view component, for seamless integration into React-based code. This component is heavily used in our responsive view modules.
 
   \section{Element resize detection}\label{sec:imp}
     Unfortunately, there is no standardized resize event for arbitrary elements \cite{w3c_dom2_events}.
@@ -314,7 +325,7 @@
                                                   When the handlers have been called, the injection is finished and observers can be notified on resize events of $e$ when scroll events occur.
     \end{enumerate}
 
-    Layout thrashing can be avoided by batching DOM operations, which results in a significant performance improvement as shown in Section~\ref{sec:eval-perf}.
+    Layout thrashing can be avoided by batching DOM operations, which results in a significant performance improvement as shown in Section~\ref{sec:eval}.
     The algorithm steps are batch processed in the following levels:
     \begin{enumerate}
       \item\label{itm:erd-algo-scroll-level-1}
@@ -330,7 +341,6 @@
         Step \ref{itm:erd-algo-original-scroll-5} is performed, which forces some layout engines to perform a layout.
     \end{enumerate}
 
-    \noindent
     Since repositioning a scrollbar in some layout engines forces a layout, such operations need to be performed after all other queueable operations have been executed.
     Therefore, step~\ref{itm:erd-algo-original-scroll-5} is performed in level~\ref{itm:erd-algo-scroll-level-3} as the last step.
     Even though some layout engines are unable to queue the repositioning of scrollbars, it is still beneficial to batch process the algorithm, since only pure layouts need to be performed (instead of having to recompute styles, and synchronize the DOM and render trees before each layout).
@@ -380,7 +390,6 @@
       %\caption{Birds}
       % \end{wrapfigure}
 
-    \noindent
     The plot compares the start-up performance
     of \elq{}'s scroll-based approach with the other two approaches.
     \elq{} achieves a 37-fold speedup compared to the object-based
@@ -412,7 +421,7 @@
       \label{table:erd-layout-engines}
     \end{table}
 
-\section{Case Studies}
+\section{Case Studies}\label{sec:case-studies}
     In order to evaluate ease of integration with existing projects, we have adapted the popular Bootstrap framework (version 3) to use element queries instead of media queries.
     According to its website, ``Bootstrap is the most popular HTML, CSS, and JS framework for developing responsive, mobile first projects on the web.''~\cite{bootstrap}
 
@@ -432,7 +441,6 @@
       @screen-lg-min: 1200px;
     \end{lstlisting}
 
-    \noindent
     The following example shows how Bootstrap's style definitions are changed from using media queries to using \elq{}'s element queries:
     \begin{lstlisting}[gobble=6,label={code:bootstrap-less-breakpoints-usage},caption={},captionpos=b]]
       /* File "less/grid.less" of Bootstrap. */
@@ -454,7 +462,6 @@
       }
     \end{lstlisting}
 
-    \noindent
     By using the power of preprocessors, \elq{} element queries become as pleasant to work with as media queries.
     In fact, only about 0.6\% of the style code (LESS syntax) need to be altered.
     Most changes are similar to the one shown above, which replaces the media query syntax with the \elq{} element queries syntax.
@@ -474,8 +481,6 @@
     Two teams at EVRY have independently come to this same conclusion, and have developed plugins to ease the usage with the different frameworks that the teams are using (Angular and React).
 
 \section{Related Work}\label{sec:related}
-
-  \paragraph{Syntax extensions.}
   The libraries~\cite{eq_imp_magichtml,eq_imp_eqcss,eq_imp_prollyfill-min-width,eq_imp_localised-css,eq_imp_gss} have in common that they require developers to write custom CSS, unlike \elq{}.
   Since they do not conform to the CSS standard, new features are supported through custom CSS parsed using JavaScript.
   As shown by \cite{eq_imp_eqcss,eq_imp_gss} quite advanced features can be implemented this way.
@@ -508,9 +513,6 @@
       This is easily avoided by good practices.
 
   \section{Conclusion}\label{sec:conclusion}
-    %Responsive Web Design (RWD) enables web applications to adapt to the characteristics of different devices, which is achieved using CSS media queries.
-    %However, using media queries it is impossible to create responsive applications in a modular way, because responsive elements then always depend on the global context.
-
     This paper extends Responsive Web Design (RWD) with {\em responsive
       modules} through element queries.  Our approach is the first to
     enable nested elements that are responsive in a modular way, i.e.,
