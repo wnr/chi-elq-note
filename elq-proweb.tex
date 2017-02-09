@@ -45,7 +45,7 @@
 
 
 \begin{document}
-\title{Modular Responsive Web Design Using\\ Element Queries: An Experience Report}
+\title{Modular Responsive Web Design: An Experience Report}
 
 \author{Lucas Wiener}
 \affiliation{%
@@ -67,7 +67,7 @@
 
 % The default list of authors is too long for headers}
 \renewcommand{\shortauthors}{L. Wiener et al.}
-\renewcommand{\shorttitle}{Modular Responsive Web Design Using Element Queries}
+\renewcommand{\shorttitle}{Modular Responsive Web Design}
 
 \begin{abstract}
     Responsive Web Design (RWD) enables web applications to adapt to the characteristics of different devices such as screen size which is important for mobile browsing.
@@ -474,7 +474,7 @@
   Approach \cite{eq_imp_classquery} does not detect resize events at all.
   Like \elq{}, \cite{eq_imp_localised-css,eq_imp_selector_queries,eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} observe \emph{elements} for resize events.
   The libraries \cite{eq_imp_localised-css,eq_imp_selector_queries} use polling while \elq{} and \cite{eq_imp_prollyfill-min-width,eq_imp_gss,eq_imp_element-queries,eq_imp_css-element-queries} use different injection approaches.
-  As shown in Section~\ref{sec:eval}, the injection approaches used by related libraries have significantly less performance than the element resizing detection system used in \elq{}.
+  As shown in Section~\ref{sec:eval}, the injection approaches used by related libraries have significantly less performance than \elq{}'s element resizing detection system.
 
   \paragraph{Constraint-based CSS}˘
   CCSS~\cite{badros1999constraint} proposes a more general and flexible alternative to CSS.
