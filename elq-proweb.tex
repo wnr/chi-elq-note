@@ -49,33 +49,25 @@
 
 \author{Lucas Wiener}
 \affiliation{%
-  \institution{EVRY AB, Sweden}
-  \streetaddress{Ekensbergsvägen 113}
-  \city{Solna}
-  \postcode{171 79}
+  \institution{EVRY AB\\Sweden}
 }
 \email{lucas.wiener@evry.com}
 
 \author{Tomas Ekholm}
 \affiliation{%
-  \institution{KTH Royal Institute of Technology}
-  \streetaddress{Brinellvägen 8}
-  \city{Stockholm}
-  \postcode{114 28}
+  \institution{KTH Royal Institute of Technology\\Sweden}
 }
 \email{tomase@kth.se}
 
 \author{Philipp Haller}
 \affiliation{%
-    \institution{KTH Royal Institute of Technology}
-    \streetaddress{Brinellvägen 8}
-    \city{Stockholm}
-    \postcode{114 28}
+    \institution{KTH Royal Institute of Technology\\Sweden}
 }
 \email{phaller@kth.se}
 
 % The default list of authors is too long for headers}
 \renewcommand{\shortauthors}{L. Wiener et al.}
+\renewcommand{\shorttitle}{Modular Responsive Web Design Using Element Queries}
 
 \begin{abstract}
     Responsive Web Design (RWD) enables web applications to adapt to the characteristics of different devices such as screen size which is important for mobile browsing.
@@ -100,33 +92,21 @@
 
 \begin{CCSXML}
 <ccs2012>
- <concept>
-  <concept_id>10010520.10010553.10010562</concept_id>
-  <concept_desc>Computer systems organization~Embedded systems</concept_desc>
-  <concept_significance>500</concept_significance>
- </concept>
- <concept>
-  <concept_id>10010520.10010575.10010755</concept_id>
-  <concept_desc>Computer systems organization~Redundancy</concept_desc>
-  <concept_significance>300</concept_significance>
- </concept>
- <concept>
-  <concept_id>10010520.10010553.10010554</concept_id>
-  <concept_desc>Computer systems organization~Robotics</concept_desc>
-  <concept_significance>100</concept_significance>
- </concept>
- <concept>
-  <concept_id>10003033.10003083.10003095</concept_id>
-  <concept_desc>Networks~Network reliability</concept_desc>
-  <concept_significance>100</concept_significance>
- </concept>
+<concept>
+<concept_id>10011007.10011006.10011050.10010512</concept_id>
+<concept_desc>Software and its engineering~Markup languages</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10011007.10011006.10011050.10011017</concept_id>
+<concept_desc>Software and its engineering~Domain specific languages</concept_desc>
+<concept_significance>300</concept_significance>
+</concept>
 </ccs2012>
 \end{CCSXML}
 
-\ccsdesc[500]{Computer systems organization~Embedded systems}
-\ccsdesc[300]{Computer systems organization~Redundancy}
-\ccsdesc{Computer systems organization~Robotics}
-\ccsdesc[100]{Networks~Network reliability}
+\ccsdesc[500]{Software and its engineering~Markup languages}
+\ccsdesc[300]{Software and its engineering~Domain specific languages}
 
 % We no longer use \terms command
 %\terms{Theory}
@@ -148,7 +128,7 @@
   Thus, a responsive module using media queries is layout dependent and has both reduced functionality and limited reusability~\cite{elq-thesis}.
   As a result, media queries can only be used for RWD of non-modular static applications.
   In a world where no better solution than media queries exists for RWD, changing the layout of a responsive application becomes a cumbersome task since it may require many responsive modules to be updated.
-  The limitations of CSS with regard to compositionality are well known (as shown in the tweet below). While we do not claim to solve the whole problem, we address compositionality issues in the context of RWD.
+  The limitations of CSS with regard to compositionality are well known (as shown in the tweet below). While we do not claim to solve the problem in its entirety, this paper provides a solution to compositionality issues in the context of RWD.
 
   \includegraphics[scale=.35]{tweet_tvdstorm}
 
@@ -290,7 +270,7 @@
   Since the breakpoint state class is now combined with the paragraph, the conditional style will only be applied in relation to the actual desired breakpoints element parent.
 
   \subsection{Advanced breakpoint logic}
-    Morphing shared markup into structrually different layouts is complex by only using CSS.
+    Morphing shared markup into structurally different layouts is complex by only using CSS.
     A better way is to produce the different markup by using the expressiveness of JavaScript.
 
     For instance, one interface design approach is to have buttons sorted in importance priority from left to right (more important to the right) for wide views.
@@ -300,7 +280,7 @@
 
     The CSS solution to this can be very complex, compared to a simple JavaScript condition rendering different markup for the two cases.
     The maintainability of a local solution in JavaScript excells over a solution in the global space of CSS.
-    \elq{} provides a JavaScript API that is suitable to build higher abstractions upon.
+    \elq{} provides a JavaScript API that is suitable to build higher-level abstractions upon.
     We have for instance created a React component\footnote{\url{https://github.com/elqteam/react-responsive-block}} on top of \elq{} that sends the current breakpoint state as an input property to the view component, for seamless integration into React-based code. This component is heavily used in our responsive view modules.
 
   \section{Element resize detection}\label{sec:imp}
@@ -361,6 +341,18 @@
     The approach of \elq{} extends the scroll-based approach with
     batch processing to increase performance~\cite{WienerEH15}.
 
+    The following plot compares the start-up performance
+    of \elq{}'s scroll-based approach with the other two approaches.
+    \elq{} achieves a 37-fold speedup compared to the object-based
+    approach and a 17-fold speedup compared to the scroll-based
+    approach when preparing 700 elements for resize detection.
+    The memory footprint of the object approach grows roughly by 0.55 MB per element, in contrast to the scroll approach whose memory consumption is insignificant.
+
+    Both approaches perform well when detecting resize events. For few elements, they both detect changes with a delay of roughly 25 ms.
+    The object approach scales a bit better, as shown in table~\ref{table:erd-layout-engines}. However, the installation time penaly is significant at scale for the object approach.
+    \elq{} uses both approaches in order to target legacy browsers. The default strategy is to use the scroll approach, but it is possible to manually choose which strategy to use.
+    See table~\ref{table:erd-layout-engines} for the performance of \elq{}'s two resize detection strategies in different browsers.
+
     %\subsection{Performance}\label{sec:eval-perf}
       % \begin{wrapfigure}{r}{0.5\textwidth}
       \begin{center}
@@ -390,18 +382,6 @@
       %\caption{Birds}
       % \end{wrapfigure}
 
-    The plot compares the start-up performance
-    of \elq{}'s scroll-based approach with the other two approaches.
-    \elq{} achieves a 37-fold speedup compared to the object-based
-    approach and a 17-fold speedup compared to the scroll-based
-    approach when preparing 700 elements for resize detection.
-    The memory footprint of the object approach grows roughly by 0.55 MB per element, in contrast to the scroll approach whose memory consumption is insignificant.
-
-    Both approaches perform well when detecting resize events. For few elements, they both detect changes with a delay of roughly 25 ms.
-    The object approach scales a bit better, as shown in table~\ref{table:erd-layout-engines}. However, the installation time penaly is significant at scale for the object approach.
-    \elq{} uses both approaches in order to target legacy browsers. The default strategy is to use the scroll approach, but it is possible to manually choose which strategy to use.
-    See table~\ref{table:erd-layout-engines} for the performance of \elq{}'s two resize detection strategies in different browsers.
-
     %\vspace{-0.5cm}
     \begin{table}[ht]\center
       \small
@@ -429,6 +409,7 @@
     The following observation guides our modularization: all responsive elements should respond to their closest enclosing \code{container} or \code{container-fluid} element.
     Both classes are used in Bootstrap to define new parts of a page (e.g., a grid is required to have a container ancestor).
     We also enable them to be nestable, which is important to satisfy the requirement of composable modules.
+
     The breakpoints of the container elements are defined using the \code{elq-breakpoints} API.
     Since the Bootstrap API uses a predefined set of breakpoints, they are all added to the container elements dynamically with JavaScript.
     According to this design, we convert all responsive elements of Bootstrap to \code{elq-mirror} elements, since they need to mirror the breakpoints of the nearest ancestor \code{elq-breakpoints} element.
