@@ -349,7 +349,7 @@
     The memory footprint of the object approach grows roughly by 0.55 MB per element, in contrast to the scroll approach whose memory consumption is insignificant.
 
     Both approaches perform well when detecting resize events. For few elements, they both detect changes with a delay of roughly 25 ms.
-    The object approach scales a bit better, as shown in table~\ref{table:erd-layout-engines}. However, the installation time penaly is significant at scale for the object approach.
+    The object approach scales a bit better, as shown in table~\ref{table:erd-layout-engines}. However, the installation time penalty is significant at scale for the object approach.
     \elq{} uses both approaches in order to target legacy browsers. The default strategy is to use the scroll approach, but it is possible to manually choose which strategy to use.
     See table~\ref{table:erd-layout-engines} for the performance of \elq{}'s two resize detection strategies in different browsers.
 
