@@ -35,11 +35,10 @@
 % ISBN
 % \acmISBN{123-4567-24-567/08/06}
 
-%Conference
-% \acmConference[WOODSTOCK'97]{ACM Woodstock conference}{July 1997}{El
-%   Paso, Texas USA}
-% \acmYear{1997}
-% \copyrightyear{2016}
+% Conference
+\acmConference[ProWeb'17]{1st International Workshop on Programming Technology for the Future Web}{April 2017}{Brussels, Belgium}
+\acmYear{2017}
+\copyrightyear{2017}
 %
 % \acmPrice{15.00}
 
@@ -78,7 +77,7 @@
 
     In this paper we extend RWD to also include responsive modules, i.e., modules that adapt their design based on their local context, independently of the global context.
     We present the \elq{} project that includes an approach to enabling modular responsivity, and a novel implementation of resize detection of DOM elements.
-    \elq{} conforms to the so-called \emph{element queries} which generalize CSS media queries.
+    \elq{} provides an implementation of \emph{element queries} which generalize CSS media queries.
     Importantly, our design conforms to existing web specifications, enabling adoption on a large scale.
     \elq{} is designed to be heavily extensible using plugins.
     Experimental results show speed-ups of the core algorithms of up to 37x compared to previous approaches.
@@ -93,20 +92,26 @@
 \begin{CCSXML}
 <ccs2012>
 <concept>
-<concept_id>10011007.10011006.10011050.10010512</concept_id>
-<concept_desc>Software and its engineering~Markup languages</concept_desc>
+<concept_id>10011007.10011006.10011050.10011017</concept_id>
+<concept_desc>Software and its engineering~Domain specific languages</concept_desc>
 <concept_significance>500</concept_significance>
 </concept>
 <concept>
-<concept_id>10011007.10011006.10011050.10011017</concept_id>
-<concept_desc>Software and its engineering~Domain specific languages</concept_desc>
+<concept_id>10011007.10011074.10011092.10011096</concept_id>
+<concept_desc>Software and its engineering~Reusability</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10011007.10011006.10011050.10010512.10011143</concept_id>
+<concept_desc>Software and its engineering~Hypertext languages</concept_desc>
 <concept_significance>300</concept_significance>
 </concept>
 </ccs2012>
 \end{CCSXML}
 
-\ccsdesc[500]{Software and its engineering~Markup languages}
-\ccsdesc[300]{Software and its engineering~Domain specific languages}
+\ccsdesc[500]{Software and its engineering~Domain specific languages}
+\ccsdesc[500]{Software and its engineering~Reusability}
+\ccsdesc[300]{Software and its engineering~Hypertext languages}
 
 % We no longer use \terms command
 %\terms{Theory}
@@ -186,7 +191,7 @@
   \paragraph{Contributions.}
     This paper makes the following contributions:
     \begin{itemize}
-      \item A library that enables responsive modules while conforming to the syntax of HTML, CSS, and JavaScript. We also provide an integration component\footnote{\url{https://github.com/elqteam/react-responsive-block}} for the React user interface library.
+      \item A new design and implementation of element queries that enables responsive modules while conforming to the syntax of HTML, CSS, and JavaScript. We also provide an integration component\footnote{\url{https://github.com/elqteam/react-responsive-block}} for the React user interface library.
       \item
         Our approach is the first to enable nested elements that are responsive in a modular way, i.e., modules fully encapsulate any styling required for RWD.
         As a side effect, responsive modules may also be arbitrarily styled with CSS independent of their context.
