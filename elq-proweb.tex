@@ -77,8 +77,8 @@
     This makes it extremely challenging to develop large responsive applications, because the lack of true modularity makes certain requirement changes either impossible or expensive to realize.
 
     In this paper we extend RWD to also include responsive modules, i.e., modules that adapt their design based on their local context, independently of the global context.
-    We present the \elq{} project which implements our approach.
-    \elq{} is a novel implementation of so-called \emph{element queries} which generalize CSS media queries.
+    We present the \elq{} project that includes an approach to enabling modular responsivity, and a novel implementation of resize detection of DOM elements.
+    \elq{} conforms to the so-called \emph{element queries} which generalize CSS media queries.
     Importantly, our design conforms to existing web specifications, enabling adoption on a large scale.
     \elq{} is designed to be heavily extensible using plugins.
     Experimental results show speed-ups of the core algorithms of up to 37x compared to previous approaches.
@@ -186,7 +186,7 @@
   \paragraph{Contributions.}
     This paper makes the following contributions:
     \begin{itemize}
-      \item A new design for element queries that enables responsive modules while conforming to the syntax of HTML, CSS, and JavaScript.
+      \item A library that enables responsive modules while conforming to the syntax of HTML, CSS, and JavaScript. We also provide an integration component\footnote{\url{https://github.com/elqteam/react-responsive-block}} for the React user interface library.
       \item
         Our approach is the first to enable nested elements that are responsive in a modular way, i.e., modules fully encapsulate any styling required for RWD.
         As a side effect, responsive modules may also be arbitrarily styled with CSS independent of their context.
@@ -194,8 +194,8 @@
         An extensible architecture that enables plugins to significantly extend the behavior of ELQ, our library implementation.
         This makes it possible to create plugins in order to enable new features and to ease integration of \elq{} into existing projects.
       \item
-        A new implementation that offers substantially higher performance than previous approaches.
-        The implementation batch-processes DOM operations in order to avoid layout thrashing (i.e., forcing the layout engine to perform multiple independent layouts). We also provide an integration component\footnote{\url{https://github.com/elqteam/react-responsive-block}} for the React user interface library.
+        A novel implementation of element resize detection\footnote{https://github.com/wnr/element-resize-detector} that offers substantially higher performance than previous approaches.
+        The implementation batch-processes DOM operations in order to avoid layout thrashing (i.e., forcing the layout engine to perform multiple independent layouts).
       \item
         A run-time cycle detection system that detects and breaks cycles stemming from cyclic rules due to unrestricted usage of element queries~\cite{elq-thesis}.
     \end{itemize}
