@@ -21,21 +21,15 @@
 \title{Modular Responsive Web Design: An Experience Report}
 
 \author{Lucas Wiener}
-\affiliation{%
-  \institution{EVRY AB\\Sweden}
-}
+\affiliation{EVRY AB\\Sweden}
 \email{lucas.wiener@evry.com}
 
 \author{Tomas Ekholm}
-\affiliation{%
-  \institution{KTH Royal Institute of Technology\\Sweden}
-}
+\affiliation{KTH Royal Institute of Technology\\Sweden}
 \email{tomase@kth.se}
 
 \author{Philipp Haller}
-\affiliation{%
-    \institution{KTH Royal Institute of Technology\\Sweden}
-}
+\affiliation{KTH Royal Institute of Technology\\Sweden}
 \email{phaller@kth.se}
 
 % The default list of authors is too long for headers}
@@ -90,7 +84,7 @@
 \copyrightyear{2017}
 \acmYear{2017}
 \setcopyright{acmcopyright}
-\acmConference{Programming '17}{April 03-06, 2017}{Brussels, Belgium}\acmPrice{15.00}\acmDOI{http://dx.doi.org/10.1145/3079368.3079404}
+\acmConference{Programming '17}{April 03-06, 2017}{Brussels, Belgium}\acmPrice{15.00}\acmDOI{10.1145/3079368.3079404}
 \acmISBN{978-1-4503-4836-2/17/04}
 
 \keywords{Responsive web design, Element queries, CSS, Modularity}
@@ -176,7 +170,7 @@
         An extensible architecture that enables plugins to significantly extend the behavior of ELQ, our library implementation.
         This makes it possible to create plugins in order to enable new features and to ease integration of \elq{} into existing projects.
       \item
-        A novel implementation of element resize detection\footnote{https://github.com/wnr/element-resize-detector} that offers substantially higher performance than previous approaches.
+        A novel implementation of element resize detection\footnote{\url{https://github.com/wnr/element-resize-detector}} that offers substantially higher performance than previous approaches.
         The implementation batch-processes DOM operations in order to avoid layout thrashing (i.e., forcing the layout engine to perform multiple independent layouts).
       \item
         A run-time cycle detection system that detects and breaks cycles stemming from cyclic rules due to unrestricted usage of element queries~\cite{elq-thesis}.
@@ -323,7 +317,7 @@
     The approach of \elq{} extends the scroll-based approach with
     batch processing to increase performance~\cite{WienerEH15}.
 
-    The following plot compares the start-up performance
+    Figure~\ref{fig:start-up-perf} compares the start-up performance
     of \elq{}'s scroll-based approach with the other two approaches.
     \elq{} achieves a 37-fold speedup compared to the object-based
     approach and a 17-fold speedup compared to the scroll-based
@@ -337,6 +331,7 @@
 
     %\subsection{Performance}\label{sec:eval-perf}
       % \begin{wrapfigure}{r}{0.5\textwidth}
+    \begin{figure}
       \begin{center}
         \begin{tikzpicture}
           \tiny
@@ -361,8 +356,9 @@
               \end{axis}
             \end{tikzpicture}
       \end{center}
-      %\caption{Birds}
+      \caption{Start-up performance.}\label{fig:start-up-perf}
       % \end{wrapfigure}
+    \end{figure}
 
     %\vspace{-0.5cm}
     \begin{table}[ht]\center
@@ -404,7 +400,7 @@
       @screen-lg-min: 1200px;
     \end{lstlisting}
 
-    The following example shows how Bootstrap's style definitions are changed from using media queries to using \elq{}'s element queries:
+    The following example shows how Bootstrap's style definitions are changed from media queries to \elq{}'s element queries:
     \begin{lstlisting}[gobble=6,label={code:bootstrap-less-breakpoints-usage},caption={},captionpos=b]]
       /* File "less/grid.less" of Bootstrap. */
 
