@@ -325,9 +325,9 @@
     The memory footprint of the object approach grows roughly by 0.55 MB per element, in contrast to the scroll approach whose memory consumption is insignificant.
 
     Both approaches perform well when detecting resize events. For few elements, they both detect changes with a delay of roughly 25 ms.
-    The object approach scales a bit better, as shown in table~\ref{table:erd-layout-engines}. However, the installation time penalty is significant at scale for the object approach.
+    The object approach scales a bit better, as shown in Table~\ref{table:erd-layout-engines}. However, the installation time penalty is significant at scale for the object approach.
     \elq{} uses both approaches in order to target legacy browsers. The default strategy is to use the scroll approach, but it is possible to manually choose which strategy to use.
-    See table~\ref{table:erd-layout-engines} for the performance of \elq{}'s two resize detection strategies in different browsers.
+    See Table~\ref{table:erd-layout-engines} for the performance of \elq{}'s two resize detection strategies in different browsers.
 
     %\subsection{Performance}\label{sec:eval-perf}
       % \begin{wrapfigure}{r}{0.5\textwidth}
@@ -400,7 +400,7 @@
       @screen-lg-min: 1200px;
     \end{lstlisting}
 
-    The following example shows how Bootstrap's style definitions are changed from media queries to \elq{}'s element queries:
+    \begin{figure}
     \begin{lstlisting}[gobble=6,label={code:bootstrap-less-breakpoints-usage},caption={},captionpos=b]]
       /* File "less/grid.less" of Bootstrap. */
 
@@ -420,10 +420,13 @@
         ...
       }
     \end{lstlisting}
+    \caption{Changing Bootstrap's style definitions.}\label{fig:bootstrap}
+    \end{figure}
 
+    Figure~\ref{fig:bootstrap} shows how Bootstrap's style definitions are changed from using media queries to using \elq{}'s element queries.
     By using the power of preprocessors, \elq{} element queries become as pleasant to work with as media queries.
     In fact, only about 0.6\% of the style code (LESS syntax) need to be altered.
-    Most changes are similar to the one shown above, which replaces the media query syntax with the \elq{} element queries syntax.
+    Most changes are similar to the one shown in Figure~\ref{fig:bootstrap}, which replaces the media query syntax with the \elq{} element queries syntax.
     This is especially advantageous when keeping a forked project up to date with the original project, as fewer diverged lines implies a lowered risk of merge conflicts.
 
     In summary we have shown that it is easy to adapt existing responsive code to use \elq{}'s element queries instead of media queries.
